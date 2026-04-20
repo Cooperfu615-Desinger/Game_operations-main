@@ -103,6 +103,7 @@ const stats = ref<RealtimeStats>({
     dau: 0,
     ggr: 0,
     totalBet: 0,
+    totalPlayers: 0,
     providerStats: [],
     deviceStats: []
 })

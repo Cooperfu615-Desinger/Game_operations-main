@@ -334,9 +334,6 @@ const columns = [
         :bordered="false"
         class="premium-table"
       />
-      <template v-if="!loading && vipLevels.length === 0" #empty>
-        <NEmpty description="暫無數據" />
-      </template>
     </NCard>
   </div>
 </template>

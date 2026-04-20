@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, onMounted } from 'vue'
+import { ref, h } from 'vue'
 import { NCard, NDataTable, NTag, NForm, NFormItem, NInput, NButton } from 'naive-ui'
 import { playerApi } from '@/api/player'
 import { PlayerAuditLog } from '@/types/player'
@@ -35,17 +35,17 @@ const pagination = { pageSize: 10 }
 
 const columns = [
     { title: 'ID', key: 'id', width: 80 },
-    { 
-        title: '時間', 
-        key: 'timestamp',
-        render: (row: PlayerAuditLog) => row.timestamp.replace('T', ' ').split('.')[0]
+    {
+        title: '時間',
+        key: 'created_at',
+        render: (row: PlayerAuditLog) => row.created_at.replace('T', ' ').split('.')[0]
     },
     { title: '玩家 ID', key: 'player_id' },
-    { 
-        title: '操作類型', 
-        key: 'action_type',
+    {
+        title: '操作類型',
+        key: 'action',
         render(row: PlayerAuditLog) {
-            return h(NTag, { type: 'info' }, { default: () => row.action_type })
+            return h(NTag, { type: 'info' }, { default: () => row.action })
         }
     },
     { title: '操作者', key: 'operator' },
@@ -71,7 +71,7 @@ const fetchData = async () => {
         try {
             const res = await playerApi.getAuditLogs(searchPlayerId.value)
             if (res.code === 0) {
-                logs.value = res.data
+                logs.value = res.data ?? []
             }
         } catch (e) {
             console.error(e)

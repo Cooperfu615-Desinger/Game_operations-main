@@ -146,6 +146,7 @@ export interface MarketingTagCreateRequest {
     name: string
     has_rate: boolean
     rate?: number
+    status?: TagConfigStatus
     description: string
 }
 

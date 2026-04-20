@@ -251,12 +251,12 @@ const columns = computed(() => [
         key: 'actionTaken', 
         width: 120,
         render(row: TriggerRecord) {
-            const typesMap: Record<string, string> = {
+            const typesMap: Record<string, 'error' | 'warning' | 'info' | 'default'> = {
                 BLOCK: 'error',
                 REPLACE: 'warning',
                 MONITOR: 'info'
             }
-            return h(NTag, { type: typesMap[row.actionTaken] || 'default', size: 'small' }, { default: () => t(`chatManagement.keywordSettings.actions.${row.actionTaken}`) })
+            return h(NTag, { type: typesMap[row.actionTaken] ?? 'default', size: 'small' }, { default: () => t(`chatManagement.keywordSettings.actions.${row.actionTaken}`) })
         }
     },
     { 

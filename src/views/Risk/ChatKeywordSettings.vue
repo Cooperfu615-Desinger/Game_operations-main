@@ -98,26 +98,27 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { 
-    useMessage, 
-    NTag, 
-    NButton, 
-    NSpace, 
-    NText, 
+import {
+    useMessage,
+    NTag,
+    NButton,
+    NSpace,
+    NText,
     NPopconfirm,
-    FormInst, 
-    NCard, 
-    NIcon, 
-    NGrid, 
-    NFormItemGi, 
-    NSelect, 
-    NInput, 
-    NForm, 
-    NDataTable, 
-    NModal, 
-    NFormItem, 
-    NInputNumber, 
-    NSwitch 
+    FormInst,
+    FormRules,
+    NCard,
+    NIcon,
+    NGrid,
+    NFormItemGi,
+    NSelect,
+    NInput,
+    NForm,
+    NDataTable,
+    NModal,
+    NFormItem,
+    NInputNumber,
+    NSwitch
 } from 'naive-ui'
 import { SettingsOutline as SettingsIcon, AddOutline as AddIcon } from '@vicons/ionicons5'
 import { chatManagementApi } from '@/api/chatManagement'
@@ -170,7 +171,7 @@ const statusOptions = computed(() => [
 ])
 
 // Rules
-const rules = {
+const rules: FormRules = {
     keyword: { required: true, message: '請輸入關鍵字', trigger: 'blur' },
     action: { required: true, message: '請選擇處置方式', trigger: 'change' },
     weight: { required: true, type: 'number', message: '請輸入權重', trigger: 'change' }

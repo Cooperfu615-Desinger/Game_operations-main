@@ -3,14 +3,14 @@ import { zhTW, zhCN, en } from './index'
 
 export type MessageSchema = typeof zhTW
 
-const i18n = createI18n<{ message: MessageSchema }, 'zh-TW' | 'zh-CN' | 'en'>({
+const i18n = createI18n({
   legacy: false,
   locale: 'zh-TW',
   fallbackLocale: 'en',
   messages: {
     'zh-TW': zhTW,
-    'zh-CN': zhCN,
-    en
+    'zh-CN': zhCN as unknown as MessageSchema,
+    en: en as unknown as MessageSchema
   }
 })
 

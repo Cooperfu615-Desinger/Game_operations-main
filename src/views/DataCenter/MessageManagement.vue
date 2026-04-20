@@ -213,7 +213,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, h } from 'vue'
+import { ref, computed, onMounted, h, VNode } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { 
     useMessage, 
@@ -440,7 +440,7 @@ const columns = computed(() => [
         width: 150,
         fixed: 'right',
         render(row: MessageRecord) {
-            const actions = []
+            const actions: VNode[] = []
             
             // Edit is only available for SCHEDULED messages
             if (row.status === 'SCHEDULED') {

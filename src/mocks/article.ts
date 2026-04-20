@@ -16,8 +16,7 @@ export const mockArticles: Article[] = [
         status_live: true,
         seo: {
             meta_title: '2026 春節儲值優惠 - 打火機娛樂',
-            meta_keywords: '春節,儲值,加碼,優惠',
-            meta_description: '春節限時儲值加碼 10%，最高贈送 88,888 點！'
+meta_description: '春節限時儲值加碼 10%，最高贈送 88,888 點！'
         }
     },
     {
