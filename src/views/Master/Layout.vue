@@ -100,7 +100,7 @@ const menuKeyToRoute: Record<string, string> = {
   'deposit-orders': '/admin/deposit-orders',
   'game-providers': '/admin/game-providers',
   'game-list': '/admin/game-list',
-  'game-type-config': '/admin/game-type-config',
+  'provider-report': '/admin/provider-report',
   'marketing-tag-config': '/admin/marketing-tag-config',
   'thirdparty-keys': '/admin/thirdparty-keys',
   'app-versions': '/admin/app-versions',
@@ -266,14 +266,14 @@ const menuOptions = computed(() => [
         icon: renderIcon(ListOutline)
       },
       {
-        label: t('navigation.gameTypeConfig'),
-        key: 'game-type-config',
-        icon: renderIcon(OptionsOutline)
-      },
-      {
         label: t('navigation.marketingTagConfig'),
         key: 'marketing-tag-config',
         icon: renderIcon(PricetagsOutline)
+      },
+      {
+        label: t('navigation.providerReport'),
+        key: 'provider-report',
+        icon: renderIcon(ReaderOutline)
       },
       {
         label: t('navigation.gameLogs'),

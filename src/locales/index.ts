@@ -154,7 +154,7 @@ export const zhTW = {
     logout: '登出',
     playerManagement: '玩家管理',
     playerList: '玩家列表',
-    gameLogs: '遊戲對局紀錄',
+    gameLogs: '遊戲紀錄',
     assetLogs: '資產變動日誌',
     vipStats: 'VIP 分析',
     playerOperationLog: '玩家異動日誌',
@@ -213,7 +213,52 @@ export const zhTW = {
     systemOperations: '系統與運維',
     adminManagement: '管理員管理',
     adminLog: '管理員日誌',
-    accountSettings: '帳號設置'
+    accountSettings: '帳號設置',
+    providerReport: '遊戲商報表'
+  },
+  providerReport: {
+    filterAllProviders: '所有遊戲商',
+    exportCsv: '匯出 CSV',
+    addProvider: '新增遊戲商',
+    addTitle: '新增遊戲商',
+    editTitle: '編輯遊戲商合約',
+    thisMonth: '本月',
+    lastMonth: '上月',
+    basisValidTurnover: '有效投注額',
+    basisGgr: 'GGR',
+    totalRow: '合計',
+    addSuccess: '遊戲商新增成功',
+    editSuccess: '合約設定已更新',
+    exportSuccess: '匯出成功',
+    codeDuplicate: '遊戲商代碼已存在',
+    col: {
+      provider: '遊戲商',
+      type: '類型',
+      billingBasis: '計費基準',
+      contractRate: '合約比例',
+      activationDate: '啟用日期',
+      totalBet: '總投注額',
+      billingAmount: '計費金額',
+      paymentAmount: '應付金額'
+    },
+    form: {
+      code: '遊戲商代碼',
+      codePlaceholder: '例如：PG、EVO',
+      codeRequired: '請輸入遊戲商代碼',
+      name: '遊戲商名稱',
+      namePlaceholder: '例如：PG Soft',
+      nameRequired: '請輸入遊戲商名稱',
+      type: '遊戲類型',
+      typeRequired: '請選擇遊戲類型',
+      billingBasis: '計費基準',
+      basisRequired: '請選擇計費基準',
+      contractRate: '合約比例',
+      rateRequired: '請輸入合約比例',
+      activationDate: '啟用時間',
+      dateRequired: '請選擇啟用時間',
+      notes: '備註',
+      notesPlaceholder: '合約備註（選填）'
+    }
   },
   vip: {
     title: 'VIP 等級設定',
@@ -1250,7 +1295,8 @@ export const zhCN = {
     systemOperations: '系统与运维',
     adminManagement: '管理员管理',
     adminLog: '管理员日志',
-    accountSettings: '账号设置'
+    accountSettings: '账号设置',
+    providerReport: '游戏商报表'
   },
   article: {
     category: '文章类别',
@@ -2066,7 +2112,8 @@ export const en = {
     systemOperations: 'System & Operations',
     adminManagement: 'Admin Management',
     adminLog: 'Admin Logs',
-    accountSettings: 'Account Settings'
+    accountSettings: 'Account Settings',
+    providerReport: 'Provider Report'
   },
   appVersion: {
     title: 'Version Management',

@@ -190,6 +190,12 @@ const masterRoutes: RouteRecordRaw[] = [
         name: 'MarketingTagConfig',
         component: () => import('@/views/Master/MarketingTagConfig.vue'),
         meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'] }
+      },
+      {
+        path: 'provider-report',
+        name: 'ProviderReport',
+        component: () => import('@/views/Master/ProviderReport.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '遊戲商報表' }
       }
       ,
       {
