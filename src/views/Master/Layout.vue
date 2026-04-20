@@ -210,6 +210,11 @@ const menuOptions = computed(() => [
         label: t('navigation.bonusHistory'),
         key: 'bonus-history',
         icon: renderIcon(GiftOutline)
+      },
+      {
+        label: t('navigation.gameLogs'),
+        key: 'game-logs',
+        icon: renderIcon(GameControllerOutline)
       }
     ]
   },
@@ -274,11 +279,6 @@ const menuOptions = computed(() => [
         label: t('navigation.providerReport'),
         key: 'provider-report',
         icon: renderIcon(ReaderOutline)
-      },
-      {
-        label: t('navigation.gameLogs'),
-        key: 'game-logs',
-        icon: renderIcon(GameControllerOutline)
       }
     ]
   },

@@ -154,7 +154,7 @@ export const zhTW = {
     logout: '登出',
     playerManagement: '玩家管理',
     playerList: '玩家列表',
-    gameLogs: '遊戲紀錄',
+    gameLogs: '玩家遊戲紀錄',
     assetLogs: '資產變動日誌',
     vipStats: 'VIP 分析',
     playerOperationLog: '玩家異動日誌',
