@@ -127,7 +127,8 @@ const menuKeyToRoute: Record<string, string> = {
   'article-manager': '/admin/articles',
   'agent-list': '/admin/agent-list',
   'vip-settings': '/admin/vip-settings',
-  'vip-stats': '/admin/vip-stats'
+  'vip-stats': '/admin/vip-stats',
+  'account-settings': '/admin/account'
 }
 
 // 根據當前路由更新選中的菜單項
@@ -344,21 +345,6 @@ const menuOptions = computed(() => [
         icon: renderIcon(ReaderOutline)
       },
       {
-        label: t('navigation.accountManagement'),
-        key: 'account-management',
-        icon: renderIcon(PeopleCircleOutline)
-      },
-      {
-        label: t('navigation.groupManagement'),
-        key: 'group-management',
-        icon: renderIcon(ShieldCheckmarkOutline)
-      },
-      {
-        label: t('navigation.operationLog'),
-        key: 'admin-operation-log',
-        icon: renderIcon(ReaderOutline)
-      },
-      {
         label: t('navigation.systemStatus'),
         key: 'system-status',
         icon: renderIcon(PulseIcon)
@@ -369,7 +355,34 @@ const menuOptions = computed(() => [
         icon: renderIcon(ShieldOutline)
       }
     ]
-  }
+  },
+  ...((['DEVELOPER', 'MANAGER'] as const).includes(authStore.user?.role as 'DEVELOPER' | 'MANAGER') ? [{
+    label: t('navigation.adminManagement'),
+    key: 'admin-management-group',
+    icon: renderIcon(PersonOutline),
+    children: [
+      {
+        label: t('navigation.accountManagement'),
+        key: 'account-management',
+        icon: renderIcon(PeopleCircleOutline)
+      },
+      {
+        label: t('navigation.groupManagement'),
+        key: 'group-management',
+        icon: renderIcon(ShieldCheckmarkOutline)
+      },
+      {
+        label: t('navigation.adminLog'),
+        key: 'admin-operation-log',
+        icon: renderIcon(ReaderOutline)
+      },
+      {
+        label: t('navigation.accountSettings'),
+        key: 'account-settings',
+        icon: renderIcon(SettingsOutline)
+      }
+    ]
+  }] : [])
 ])
 
 

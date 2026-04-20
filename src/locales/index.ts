@@ -210,7 +210,10 @@ export const zhTW = {
     agentManagement: '代理管理',
     agentList: '代理列表',
     vipSettings: 'VIP等級設定',
-    systemOperations: '系統與運維'
+    systemOperations: '系統與運維',
+    adminManagement: '管理員管理',
+    adminLog: '管理員日誌',
+    accountSettings: '帳號設置'
   },
   vip: {
     title: 'VIP 等級設定',
@@ -1241,7 +1244,13 @@ export const zhCN = {
     systemMessage: '站内信',
     chatManagement: '聊天室管理',
     chatKeywordSettings: '敏感字库设定',
-    chatTriggerAudit: '触发纪录审核'
+    chatTriggerAudit: '触发纪录审核',
+    agentList: '代理列表',
+    vipSettings: 'VIP等级设定',
+    systemOperations: '系统与运维',
+    adminManagement: '管理员管理',
+    adminLog: '管理员日志',
+    accountSettings: '账号设置'
   },
   article: {
     category: '文章类别',
@@ -2045,7 +2054,19 @@ export const en = {
     commodityConfig: 'Commodity Config',
     imageConfig: 'Image Management',
     systemStatus: 'System Health Status',
-    messageSettings: 'Message Settings'
+    messageSettings: 'Message Settings',
+    systemMessage: 'In-App Message',
+    communication: 'Communication & Chat',
+    chatManagement: 'Chat Room Management',
+    chatRoomManagement: 'Chat Room Content',
+    chatKeywordSettings: 'Keyword Settings',
+    chatTriggerAudit: 'Trigger Audit',
+    agentList: 'Agent List',
+    vipSettings: 'VIP Level Settings',
+    systemOperations: 'System & Operations',
+    adminManagement: 'Admin Management',
+    adminLog: 'Admin Logs',
+    accountSettings: 'Account Settings'
   },
   appVersion: {
     title: 'Version Management',
