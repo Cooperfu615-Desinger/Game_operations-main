@@ -272,6 +272,12 @@ const masterRoutes: RouteRecordRaw[] = [
         name: 'VIPSettings',
         component: () => import('@/views/VIPManagement/VIPSettings.vue'),
         meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: 'VIP等級設定' }
+      },
+      {
+        path: 'player-win-loss-ranking',
+        name: 'PlayerWinLossRanking',
+        component: () => import('@/views/Master/PlayerWinLossRanking.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '玩家輸贏排名' }
       }
     ]
   }

@@ -1,90 +1,91 @@
-import { GameLog, GameSearchParams, GameReportStatus } from '@/types/game'
+import { GameLog, GameSearchParams, GameReportStatus, ProviderType } from '@/types/game'
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-// Helpers to generate mock data
-const providers = ['PG', 'JILI', 'EVOLUTION', 'PP', 'JDB']
-const games = {
-    'PG': ['Mahjong Ways 2', 'Lucky Neko', 'Treasures of Aztec'],
-    'JILI': ['Super Ace', 'Golden Empire', 'Boxing King'],
-    'EVOLUTION': ['Crazy Time', 'Lightning Roulette', 'Baccarat A'],
-    'PP': ['Gates of Olympus', 'Sweet Bonanza'],
-    'JDB': ['Birds Party', 'Dragon Master']
+// Provider metadata
+const providerMeta: Record<string, { type: ProviderType; games: string[] }> = {
+    PG:        { type: 'SLOT',    games: ['Mahjong Ways 2', 'Lucky Neko', 'Treasures of Aztec', 'Wild Bandito'] },
+    JILI:      { type: 'SLOT',    games: ['Super Ace', 'Golden Empire', 'Boxing King', 'Charge Buffalo'] },
+    EVOLUTION: { type: 'LIVE',    games: ['Crazy Time', 'Lightning Roulette', 'Baccarat A', 'Dragon Tiger'] },
+    PP:        { type: 'SLOT',    games: ['Gates of Olympus', 'Sweet Bonanza', 'Big Bass Bonanza'] },
+    JDB:       { type: 'SLOT',    games: ['Birds Party', 'Dragon Master', 'Lucky Tiger'] },
+    SABA:      { type: 'SPORTS',  games: ['Football', 'Basketball', 'Baseball', 'Tennis'] },
+    KY:        { type: 'SLOT',    games: ['Fishing War', 'Ocean King', 'Crab King'] },
+}
+const providerKeys = Object.keys(providerMeta)
+
+// Weighted provider selection (SLOT heaviest, SPORTS/LIVE lighter)
+const providerWeights = [30, 25, 15, 15, 5, 5, 5] // PG JILI EVO PP JDB SABA KY
+
+function weightedProvider(): string {
+    const total = providerWeights.reduce((s, w) => s + w, 0)
+    let r = Math.random() * total
+    for (let i = 0; i < providerKeys.length; i++) {
+        r -= providerWeights[i]
+        if (r <= 0) return providerKeys[i]
+    }
+    return providerKeys[0]
 }
 
-const mockGameLogs: GameLog[] = []
+export const mockGameLogs: GameLog[] = []
 
 const generateMockLogs = () => {
-    // Generate 200 logs
+    // Generate 500 logs covering 30 days (to yesterday)
     const now = new Date()
-    for (let i = 0; i < 200; i++) {
-        const provider = providers[Math.floor(Math.random() * providers.length)]
-        // @ts-ignore
-        const gameList = games[provider]
-        const gameName = gameList[Math.floor(Math.random() * gameList.length)]
+    // Cap at end of yesterday to enforce "data up to yesterday"
+    const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime() - 1
 
-        const isVoid = Math.random() < 0.05 // 5% Void
-        const isFreeSpin = Math.random() < 0.1 // 10% Free Spin
+    for (let i = 0; i < 500; i++) {
+        const provKey = weightedProvider()
+        const meta = providerMeta[provKey]
+        const gameName = meta.games[Math.floor(Math.random() * meta.games.length)]
 
-        const bet = isFreeSpin ? 0 : Math.floor(Math.random() * 1000) + 10
-        // Win amount logic
+        const isVoid = Math.random() < 0.04
+        const isFreeSpin = Math.random() < 0.08
+
+        // LIVE / SPORTS tend to have higher bets
+        const betBase = meta.type === 'LIVE' ? 500 : meta.type === 'SPORTS' ? 300 : 100
+        const bet = isFreeSpin ? 0 : Math.floor(Math.random() * betBase * 5) + betBase
+
         let win = 0
-        if (Math.random() > 0.6) { // 40% win rate
-            win = Math.floor(bet * (Math.random() * 5)) // Up to 5x win
+        if (!isVoid && Math.random() > 0.55) {
+            const multiplier = meta.type === 'LIVE' ? 2.5 : meta.type === 'SPORTS' ? 1.9 : 4
+            win = Math.floor(bet * (Math.random() * multiplier))
         }
 
-        // Status
         let status: GameReportStatus = 'SETTLED'
         if (isVoid) status = 'void'
 
-        // Amounts
         let net = win - bet
         let validTurnover = bet
+        if (status === 'void') { win = 0; net = 0; validTurnover = 0 }
 
-        if (status === 'void') {
-            validTurnover = 0
-            win = 0
-            net = 0 // Void returns bet? Usually yes. Simplification: Mock data assumes resolved void (0 impact)
-        }
-
-        // Time
-        const timeOffset = Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000) // Last 7 days
-        const settleTime = new Date(now.getTime() - timeOffset)
-        // Simulate cross-day: create time is 1-5 mins before settle
+        // Spread across last 30 days (all before today)
+        const timeOffset = Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000) + 24 * 60 * 60 * 1000
+        const settleTime = new Date(endOfYesterday - timeOffset)
         const createTime = new Date(settleTime.getTime() - (Math.floor(Math.random() * 300000) + 1000))
 
         const uid = `GID_${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-
-        // Raw JSON Mock
-        const raw = {
-            transaction_id: uid,
-            vendor: provider,
-            game: gameName,
-            user: `P${10000 + Math.floor(Math.random() * 20)}`,
-            amount_bet: bet,
-            amount_win: win,
-            status: status,
-            ts: settleTime.getTime()
-        }
+        const playerId = `P${10000 + Math.floor(Math.random() * 30)}`  // 30 players
 
         mockGameLogs.push({
             id: uid,
-            provider_id: provider,
+            provider_id: provKey,
             provider_round_id: `R_${Math.random().toString(36).substr(2, 12)}`,
             game_name: gameName,
-            player_id: `P${10000 + Math.floor(Math.random() * 20)}`, // P10000 - P10019
+            game_type: meta.type,
+            player_id: playerId,
             bet_amount: bet,
             win_amount: win,
             net_amount: net,
             valid_turnover: validTurnover,
             settle_time: settleTime.toISOString(),
             create_time: createTime.toISOString(),
-            status: status,
-            raw_json: JSON.stringify(raw),
-            currency: 'SILVER' // Mocking silver game by default
+            status,
+            raw_json: JSON.stringify({ transaction_id: uid, vendor: provKey, game: gameName, user: playerId, amount_bet: bet, amount_win: win, status, ts: settleTime.getTime() }),
+            currency: 'SILVER'
         })
     }
-    // Sort by settle time desc
     mockGameLogs.sort((a, b) => new Date(b.settle_time).getTime() - new Date(a.settle_time).getTime())
 }
 

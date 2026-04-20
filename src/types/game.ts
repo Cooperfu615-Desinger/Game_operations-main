@@ -5,6 +5,7 @@ export interface GameLog {
     provider_id: string // PG, JILI, EVO
     provider_round_id: string // External ID
     game_name: string
+    game_type: ProviderType
     player_id: string
     bet_amount: number
     win_amount: number

@@ -128,7 +128,8 @@ const menuKeyToRoute: Record<string, string> = {
   'agent-list': '/admin/agent-list',
   'vip-settings': '/admin/vip-settings',
   'vip-stats': '/admin/vip-stats',
-  'account-settings': '/admin/account'
+  'account-settings': '/admin/account',
+  'player-win-loss-ranking': '/admin/player-win-loss-ranking'
 }
 
 // 根據當前路由更新選中的菜單項
@@ -205,6 +206,11 @@ const menuOptions = computed(() => [
         label: t('navigation.gameLogs'),
         key: 'game-logs',
         icon: renderIcon(GameControllerOutline)
+      },
+      {
+        label: t('navigation.playerWinLossRanking'),
+        key: 'player-win-loss-ranking',
+        icon: renderIcon(DataCenterIcon)
       }
     ]
   },

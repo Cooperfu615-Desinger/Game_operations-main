@@ -214,7 +214,25 @@ export const zhTW = {
     adminManagement: '管理員管理',
     adminLog: '管理員日誌',
     accountSettings: '帳號設置',
-    providerReport: '遊戲商報表'
+    providerReport: '遊戲商報表',
+    playerWinLossRanking: '玩家輸贏排名'
+  },
+  playerWinLoss: {
+    dimType: '遊戲類別',
+    dimProvider: '遊戲商',
+    tabWin: '贏最多',
+    tabLoss: '輸最多',
+    tabAvgBet: '平均投注額',
+    colPlayerId: '玩家 ID',
+    colTotalBet: '總投注額',
+    colTotalWin: '總贏分',
+    colNetAmount: '淨輸贏',
+    colRoundCount: '對局數',
+    colAvgBet: '平均投注',
+    emptyHint: '請選擇查詢條件後按下查詢',
+    shortcutLast7: '近 7 天',
+    shortcutLast30: '近 30 天',
+    shortcutLastMonth: '上月'
   },
   providerReport: {
     filterAllProviders: '所有遊戲商',
@@ -1296,7 +1314,8 @@ export const zhCN = {
     adminManagement: '管理员管理',
     adminLog: '管理员日志',
     accountSettings: '账号设置',
-    providerReport: '游戏商报表'
+    providerReport: '游戏商报表',
+    playerWinLossRanking: '玩家输赢排名'
   },
   article: {
     category: '文章类别',
@@ -2113,7 +2132,8 @@ export const en = {
     adminManagement: 'Admin Management',
     adminLog: 'Admin Logs',
     accountSettings: 'Account Settings',
-    providerReport: 'Provider Report'
+    providerReport: 'Provider Report',
+    playerWinLossRanking: 'Player Win/Loss Ranking'
   },
   appVersion: {
     title: 'Version Management',
