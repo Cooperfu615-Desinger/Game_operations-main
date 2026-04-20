@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/Game_operations/',
+  base: '/Game_operations-main/',
   plugins: [vue()],
   resolve: {
     alias: {
