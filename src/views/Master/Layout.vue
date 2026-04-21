@@ -240,6 +240,11 @@ const menuOptions = computed(() => [
         label: t('navigation.promotionManagement'),
         key: 'promotions',
         icon: renderIcon(GiftOutline)
+      },
+      {
+        label: t('navigation.vipSettings'),
+        key: 'vip-settings',
+        icon: renderIcon(PricetagsOutline)
       }
     ]
   },
@@ -352,6 +357,23 @@ const menuOptions = computed(() => [
         icon: renderIcon(ChatIcon)
       },
       {
+        label: '玩家訊息模板',
+        key: 'player-message-templates',
+        icon: renderIcon(ListOutline)
+      }
+    ]
+  },
+  {
+    label: t('navigation.riskManagement'),
+    key: 'risk-management-group',
+    icon: renderIcon(ShieldOutline),
+    children: [
+      {
+        label: t('navigation.riskAlerts'),
+        key: 'risk-alerts',
+        icon: renderIcon(PulseIcon)
+      },
+      {
         label: t('navigation.chatKeywordSettings'),
         key: 'chat-keywords',
         icon: renderIcon(OptionsOutline)
@@ -360,18 +382,13 @@ const menuOptions = computed(() => [
         label: t('navigation.chatTriggerAudit'),
         key: 'chat-audit',
         icon: renderIcon(ReaderOutline)
-      },
-      {
-        label: '玩家訊息模板',
-        key: 'player-message-templates',
-        icon: renderIcon(ListOutline)
       }
     ]
   },
   {
-    label: t('navigation.marketingOperations'),
-    key: 'marketing-operations-group',
-    icon: renderIcon(GiftOutline),
+    label: t('navigation.contentManagement'),
+    key: 'content-management-group',
+    icon: renderIcon(ReaderOutline),
     children: [
       {
         label: t('navigation.announcement'),
@@ -387,11 +404,6 @@ const menuOptions = computed(() => [
         label: t('navigation.articleManagement'),
         key: 'article-manager',
         icon: renderIcon(ReaderOutline)
-      },
-      {
-        label: t('navigation.vipSettings'),
-        key: 'vip-settings',
-        icon: renderIcon(SettingsOutline)
       }
     ]
   },
