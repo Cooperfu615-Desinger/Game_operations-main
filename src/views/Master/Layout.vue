@@ -134,6 +134,7 @@ const menuKeyToRoute: Record<string, string> = {
   'guild-management': '/admin/guilds',
   'article-manager': '/admin/articles',
   'agent-list': '/admin/agent-list',
+  'agent-report': '/admin/agent-report',
   'vip-settings': '/admin/vip-settings',
   'vip-stats': '/admin/vip-stats',
   'account-settings': '/admin/account',
@@ -207,7 +208,8 @@ const menuOptions = computed(() => [
     key: 'agent-management-group',
     icon: renderIcon(PeopleCircleOutline),
     children: [
-      { label: t('navigation.agentList'), key: 'agent-list', icon: renderIcon(ListOutline) }
+      { label: t('navigation.agentList'),   key: 'agent-list',   icon: renderIcon(ListOutline) },
+      { label: t('navigation.agentReport'), key: 'agent-report', icon: renderIcon(DataCenterIcon) }
     ]
   }] : []),
 

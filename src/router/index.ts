@@ -268,6 +268,24 @@ const masterRoutes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '代理列表' }
       },
       {
+        path: 'agent/:id',
+        name: 'AgentDetail',
+        component: () => import('@/views/AgentManagement/AgentDetail.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '代理詳情' }
+      },
+      {
+        path: 'agent-commission/:id',
+        name: 'AgentCommission',
+        component: () => import('@/views/AgentManagement/AgentCommission.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '佣金設置' }
+      },
+      {
+        path: 'agent-report',
+        name: 'AgentReport',
+        component: () => import('@/views/AgentManagement/AgentReport.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '代理統計報表' }
+      },
+      {
         path: 'vip-settings',
         name: 'VIPSettings',
         component: () => import('@/views/VIPManagement/VIPSettings.vue'),

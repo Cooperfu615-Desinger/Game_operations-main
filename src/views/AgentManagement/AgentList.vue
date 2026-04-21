@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, h, computed } from 'vue'
-import { 
+import { useRouter } from 'vue-router'
+import {
   NCard, NInput, NSelect, NDatePicker, NButton, NDataTable, NSpace, NTag,
   NModal, NForm, NFormItem, useMessage, DataTableColumns, NRadioGroup, NRadio, NSwitch, NInputNumber,
   NGrid, NGridItem, NIcon, NDivider
 } from 'naive-ui'
-import { 
+import {
   SearchOutline, CreateOutline, CashOutline, InformationCircleOutline,
-  PeopleOutline, AddOutline
+  PeopleOutline, AddOutline, EyeOutline, SettingsOutline
 } from '@vicons/ionicons5'
 import { agentApi } from '@/api/agent'
 import { Agent, AgentSearchParams, AgentStatus, AgentIdentity } from '@/types/agent'
 import { useI18n } from 'vue-i18n'
+
+const router = useRouter()
 
 const message = useMessage()
 const { t } = useI18n()
@@ -152,18 +155,28 @@ const columns = computed<DataTableColumns<Agent>>(() => [
   {
     title: t('agent.list.actions'),
     key: 'actions',
-    width: 180,
+    width: 260,
     fixed: 'right',
     render(row) {
       const actions = [
-        h(NButton, { size: 'small', quaternary: true, type: 'primary', onClick: () => showEditModal(row) }, { 
-          default: () => [h(NIcon, { style: { marginRight: '4px' } }, { default: () => h(CreateOutline) }), t('agent.list.edit')] 
+        h(NButton, { size: 'small', quaternary: true, type: 'info', onClick: () => router.push(`/admin/agent/${row.id}`) }, {
+          default: () => [h(NIcon, { style: { marginRight: '4px' } }, { default: () => h(EyeOutline) }), t('agent.list.details')]
+        }),
+        h(NButton, { size: 'small', quaternary: true, type: 'primary', onClick: () => showEditModal(row) }, {
+          default: () => [h(NIcon, { style: { marginRight: '4px' } }, { default: () => h(CreateOutline) }), t('agent.list.edit')]
         })
       ]
       if (row.identity !== 'ADMIN') {
         actions.push(
-          h(NButton, { size: 'small', quaternary: true, type: 'warning', onClick: () => showPromoModal(row) }, { 
-            default: () => [h(NIcon, { style: { marginRight: '4px' } }, { default: () => h(CashOutline) }), t('agent.list.promoMoney')] 
+          h(NButton, { size: 'small', quaternary: true, type: 'warning', onClick: () => router.push(`/admin/agent-commission/${row.id}`) }, {
+            default: () => [h(NIcon, { style: { marginRight: '4px' } }, { default: () => h(SettingsOutline) }), t('agent.list.commission')]
+          })
+        )
+      }
+      if (row.identity !== 'ADMIN') {
+        actions.push(
+          h(NButton, { size: 'small', quaternary: true, type: 'default', onClick: () => showPromoModal(row) }, {
+            default: () => [h(NIcon, { style: { marginRight: '4px' } }, { default: () => h(CashOutline) }), t('agent.list.promoMoney')]
           })
         )
       }
