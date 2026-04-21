@@ -290,6 +290,24 @@ const masterRoutes: RouteRecordRaw[] = [
         name: 'SmsProviderManagement',
         component: () => import('@/views/Master/SmsProviderManagement.vue'),
         meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '簡訊商管理' }
+      },
+      {
+        path: 'frontend-management',
+        name: 'FrontendManagement',
+        component: () => import('@/views/Master/FrontendManagement.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '前台管理' }
+      },
+      {
+        path: 'promotions',
+        name: 'PromotionManagement',
+        component: () => import('@/views/Master/PromotionManagement.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '優惠管理' }
+      },
+      {
+        path: 'missions',
+        name: 'MissionManagement',
+        component: () => import('@/views/Master/MissionManagement.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '任務管理' }
       }
     ]
   }

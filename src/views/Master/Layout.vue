@@ -131,7 +131,10 @@ const menuKeyToRoute: Record<string, string> = {
   'account-settings': '/admin/account',
   'player-win-loss-ranking': '/admin/player-win-loss-ranking',
   'cs-channels': '/admin/cs-channels',
-  'sms-providers': '/admin/sms-providers'
+  'sms-providers': '/admin/sms-providers',
+  'frontend-management': '/admin/frontend-management',
+  'promotions': '/admin/promotions',
+  'missions': '/admin/missions'
 }
 
 // 根據當前路由更新選中的菜單項
@@ -213,6 +216,42 @@ const menuOptions = computed(() => [
         label: t('navigation.playerWinLossRanking'),
         key: 'player-win-loss-ranking',
         icon: renderIcon(DataCenterIcon)
+      }
+    ]
+  },
+  {
+    label: t('navigation.frontendManagement'),
+    key: 'frontend-management-group',
+    icon: renderIcon(LayersOutline),
+    children: [
+      {
+        label: t('navigation.frontendManagement'),
+        key: 'frontend-management',
+        icon: renderIcon(LayersOutline)
+      }
+    ]
+  },
+  {
+    label: t('navigation.promotionManagement'),
+    key: 'promotion-management-group',
+    icon: renderIcon(GiftOutline),
+    children: [
+      {
+        label: t('navigation.promotionManagement'),
+        key: 'promotions',
+        icon: renderIcon(GiftOutline)
+      }
+    ]
+  },
+  {
+    label: t('navigation.missionManagement'),
+    key: 'mission-management-group',
+    icon: renderIcon(PricetagsOutline),
+    children: [
+      {
+        label: t('navigation.missionManagement'),
+        key: 'missions',
+        icon: renderIcon(PricetagsOutline)
       }
     ]
   },
