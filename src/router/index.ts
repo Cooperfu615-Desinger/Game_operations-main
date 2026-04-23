@@ -350,6 +350,12 @@ const masterRoutes: RouteRecordRaw[] = [
         name: 'WorldChannelMonitor',
         component: () => import('@/views/CustomerService/WorldChannelMonitor.vue'),
         meta: { requiresAuth: true, breadcrumb: '世界頻道監控' }
+      },
+      {
+        path: 'frontend-review',
+        name: 'FrontendReview',
+        component: () => import('@/views/Master/FrontendReview.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '前台內容審核' }
       }
     ]
   }

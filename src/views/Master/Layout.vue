@@ -148,6 +148,7 @@ const menuKeyToRoute: Record<string, string> = {
   'cs-channels': '/admin/cs-channels',
   'sms-providers': '/admin/sms-providers',
   'frontend-management': '/admin/frontend-management',
+  'frontend-review': '/admin/frontend-review',
   'promotions': '/admin/promotions',
   'missions': '/admin/missions'
 }
@@ -225,7 +226,8 @@ const menuOptions = computed(() => [
     key: 'frontend-management-group',
     icon: renderIcon(LayersOutline),
     children: [
-      { label: t('navigation.frontendManagement'), key: 'frontend-management', icon: renderIcon(LayersOutline) }
+      { label: t('navigation.frontendManagement'), key: 'frontend-management', icon: renderIcon(LayersOutline) },
+      { label: t('navigation.frontendReview'),     key: 'frontend-review',     icon: renderIcon(ReaderOutline) }
     ]
   }] : []),
 
