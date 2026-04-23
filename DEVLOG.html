@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Operations 後台 — 改版說明</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      line-height: 1.7;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #fff;
+      padding: 48px 0 40px;
+      text-align: center;
+    }
+    .page-header h1 { font-size: 2rem; font-weight: 700; letter-spacing: .03em; }
+    .page-header .subtitle { margin-top: 8px; color: #94a3b8; font-size: .95rem; }
+    .meta-row {
+      display: flex; justify-content: center; gap: 24px; margin-top: 20px; flex-wrap: wrap;
+    }
+    .meta-chip {
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px; padding: 4px 16px; font-size: .82rem; color: #cbd5e1;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .content { padding: 48px 0 80px; }
+
+    /* ── TOC ── */
+    .toc {
+      background: #fff; border-radius: 12px; padding: 28px 32px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 40px;
+    }
+    .toc h2 { font-size: 1rem; font-weight: 700; color: #64748b; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 16px; }
+    .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+    .toc-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px; text-decoration: none; color: #334155;
+      border: 1px solid #e2e8f0; transition: all .15s;
+    }
+    .toc-item:hover { background: #f1f5f9; border-color: #94a3b8; color: #0f3460; }
+    .toc-icon { font-size: 1.1rem; }
+
+    /* ── Section ── */
+    .section { margin-bottom: 48px; }
+    .section-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+      padding-bottom: 14px; border-bottom: 2px solid #e2e8f0;
+    }
+    .section-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .section-title { font-size: 1.3rem; font-weight: 700; }
+    .section-meta { font-size: .82rem; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff; border-radius: 12px; padding: 24px 28px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 20px;
+    }
+    .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: #0f172a; }
+
+    /* ── Feature list ── */
+    .feature-list { list-style: none; }
+    .feature-list li {
+      padding: 7px 0 7px 28px; position: relative; color: #334155; font-size: .93rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-list li::before {
+      content: '✓'; position: absolute; left: 0; color: #22c55e; font-weight: 700;
+    }
+
+    /* ── Tag badges ── */
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: .78rem; font-weight: 600;
+    }
+    .tag-new    { background: #dcfce7; color: #166534; }
+    .tag-change { background: #dbeafe; color: #1e40af; }
+    .tag-remove { background: #fee2e2; color: #991b1b; }
+    .tag-fix    { background: #fef3c7; color: #92400e; }
+    .tag-module { background: #ede9fe; color: #5b21b6; }
+
+    /* ── File table ── */
+    .file-table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+    .file-table th {
+      background: #f8fafc; text-align: left; padding: 10px 14px;
+      color: #64748b; font-weight: 600; border-bottom: 2px solid #e2e8f0;
+    }
+    .file-table td {
+      padding: 9px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top;
+    }
+    .file-table tr:hover td { background: #fafafa; }
+    .file-path {
+      font-family: 'SFMono-Regular', Consolas, monospace; font-size: .82rem;
+      background: #f1f5f9; padding: 2px 7px; border-radius: 4px; color: #475569;
+    }
+    .status-new    { color: #16a34a; font-weight: 600; }
+    .status-change { color: #2563eb; font-weight: 600; }
+    .status-remove { color: #dc2626; font-weight: 600; }
+
+    /* ── Code block ── */
+    pre {
+      background: #1e293b; color: #e2e8f0; border-radius: 10px;
+      padding: 18px 22px; font-size: .82rem; overflow-x: auto; line-height: 1.6;
+      margin: 12px 0;
+    }
+    code { font-family: 'SFMono-Regular', Consolas, monospace; }
+    pre code { color: inherit; }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+      margin: 14px 0; font-size: .88rem;
+    }
+    .flow-step {
+      padding: 6px 14px; border-radius: 6px; background: #f1f5f9;
+      border: 1px solid #cbd5e1; color: #334155; font-weight: 500;
+    }
+    .flow-arrow { color: #94a3b8; margin: 0 6px; font-size: 1rem; }
+    .flow-step.active { background: #dcfce7; border-color: #86efac; color: #166534; }
+    .flow-step.warn   { background: #fef3c7; border-color: #fde68a; color: #92400e; }
+    .flow-step.error  { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+    /* ── Grid helpers ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── KPI strip ── */
+    .kpi-strip { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+    .kpi {
+      flex: 1; min-width: 140px; background: #fff; border-radius: 10px;
+      padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06); text-align: center;
+    }
+    .kpi-num { font-size: 2rem; font-weight: 800; color: #0f3460; }
+    .kpi-label { font-size: .8rem; color: #94a3b8; margin-top: 4px; }
+
+    /* ── Role table ── */
+    .role-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px;
+      margin-top: 14px;
+    }
+    .role-card {
+      border-radius: 8px; padding: 12px 16px; border: 1px solid #e2e8f0;
+    }
+    .role-code { font-family: monospace; font-size: .8rem; color: #7c3aed; font-weight: 700; }
+    .role-name { font-size: .88rem; color: #334155; margin-top: 4px; }
+    .role-group { font-size: .75rem; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Calendar preview ── */
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 14px;
+    }
+    .cal-day {
+      border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 5px; text-align: center;
+      font-size: .8rem; color: #64748b; background: #fafafa;
+    }
+    .cal-day.milestone {
+      background: #fff7ed; border-color: #fb923c; color: #c2410c; font-weight: 700;
+    }
+    .cal-day-num { font-weight: 700; font-size: .9rem; }
+    .cal-cost { font-size: .7rem; color: #94a3b8; margin-top: 2px; }
+    .cal-label { font-size: .68rem; color: #fb923c; margin-top: 2px; }
+
+    /* ── Pending table ── */
+    .pending-table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+    .pending-table th {
+      text-align: left; padding: 8px 12px; background: #f8fafc;
+      color: #64748b; font-weight: 600; border-bottom: 2px solid #e2e8f0;
+    }
+    .pending-table td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; }
+    .status-todo  { color: #d97706; font-weight: 600; }
+    .status-done  { color: #16a34a; font-weight: 600; }
+    .status-later { color: #6b7280; }
+
+    /* ── Section colors ── */
+    .color-nav     { background: #dbeafe; color: #1e40af; }
+    .color-agent   { background: #ede9fe; color: #5b21b6; }
+    .color-finance { background: #fce7f3; color: #9d174d; }
+    .color-cs      { background: #d1fae5; color: #065f46; }
+    .color-frontend{ background: #ffedd5; color: #9a3412; }
+    .color-promo   { background: #fef3c7; color: #78350f; }
+    .color-mission { background: #ecfdf5; color: #064e3b; }
+    .color-tech    { background: #f0f9ff; color: #0c4a6e; }
+
+    footer {
+      background: #1a1a2e; color: #64748b; text-align: center;
+      padding: 24px; font-size: .83rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════ HEADER ════════════════════════════════ -->
+<header class="page-header">
+  <div class="container">
+    <h1>🎮 Game Operations 後台改版說明</h1>
+    <p class="subtitle">本次改版新增模組、調整架構與修復紀錄</p>
+    <div class="meta-row">
+      <span class="meta-chip">📅 2026-04-20 ~ 2026-04-23</span>
+      <span class="meta-chip">🔨 20 commits</span>
+      <span class="meta-chip">📁 4,000+ 行新增程式碼</span>
+      <span class="meta-chip">⚙️ Vue 3 · TypeScript · Naive UI</span>
+    </div>
+  </div>
+</header>
+
+<div class="container content">
+
+  <!-- ════ OVERVIEW KPIs ════ -->
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-num">7</div><div class="kpi-label">新增功能模組</div></div>
+    <div class="kpi"><div class="kpi-num">12</div><div class="kpi-label">新增 Vue 頁面</div></div>
+    <div class="kpi"><div class="kpi-num">6</div><div class="kpi-label">新增 TS 類型檔</div></div>
+    <div class="kpi"><div class="kpi-label" style="margin-top:14px">導覽群組完整角色分流</div></div>
+  </div>
+
+  <!-- ════ TOC ════ -->
+  <div class="toc">
+    <h2>目錄</h2>
+    <div class="toc-grid">
+      <a class="toc-item" href="#nav"><span class="toc-icon">🧭</span>導覽系統重構</a>
+      <a class="toc-item" href="#agent"><span class="toc-icon">🤝</span>代理管理</a>
+      <a class="toc-item" href="#finance"><span class="toc-icon">💰</span>財務管理補強</a>
+      <a class="toc-item" href="#cs"><span class="toc-icon">🎧</span>客服管理</a>
+      <a class="toc-item" href="#frontend"><span class="toc-icon">🖥️</span>前台管理</a>
+      <a class="toc-item" href="#promo"><span class="toc-icon">🎁</span>優惠管理</a>
+      <a class="toc-item" href="#mission"><span class="toc-icon">🏆</span>任務管理</a>
+      <a class="toc-item" href="#pending"><span class="toc-icon">📋</span>待辦與收斂建議</a>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 1: NAV
+  ════════════════════════════════ -->
+  <div class="section" id="nav">
+    <div class="section-header">
+      <div class="section-icon color-nav">🧭</div>
+      <div>
+        <div class="section-title">角色型導覽系統重構</div>
+        <div class="section-meta">commits: 5403801 · ddf93c5 · f83212a · 3aaaeee · 78cc289</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">導覽群組最終順序</div>
+        <ul class="feature-list">
+          <li>首頁（所有角色）</li>
+          <li>統計報表（Leadership + 財務/技術/運維）</li>
+          <li>代理管理（Leadership）</li>
+          <li>會員管理（Leadership + 營運/客服）</li>
+          <li><strong>前台管理</strong>（Leadership + 營運）⬅ 新</li>
+          <li><strong>優惠管理</strong>（Leadership + 營運）⬅ 新</li>
+          <li><strong>任務管理</strong>（Leadership + 營運）⬅ 新</li>
+          <li>內容管理（Leadership + 營運）</li>
+          <li>遊戲管理（Leadership + 技術）</li>
+          <li>客服管理（Leadership + 客服）</li>
+          <li>通訊管理、風控管理、財務管理…</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">角色可見性規則</div>
+        <pre><code>// Layout.vue
+const sees = (...roles) =>
+  roles.includes(authStore.user?.role)
+
+const LEADERSHIP = [
+  'BOSS','DEVELOPER','PM','MANAGER'
+]
+
+// 前台/優惠/任務 群組可見
+sees(...LEADERSHIP, 'OPERATOR')</code></pre>
+        <div style="margin-top:14px;">
+          <div class="tags">
+            <span class="tag tag-new">新增</span>
+            <span>快速登入身份切換（7 種角色）</span>
+          </div>
+          <p style="font-size:.88rem;color:#64748b;">登入頁新增 Chip 列，點擊即填入測試帳密，方便開發驗證各角色導覽差異。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">角色定義總覽</div>
+      <div class="role-grid">
+        <div class="role-card"><div class="role-code">BOSS</div><div class="role-name">老闆</div><div class="role-group">LEADERSHIP</div></div>
+        <div class="role-card"><div class="role-code">DEVELOPER</div><div class="role-name">開發者（全權限）</div><div class="role-group">LEADERSHIP</div></div>
+        <div class="role-card"><div class="role-code">PM</div><div class="role-name">產品經理</div><div class="role-group">LEADERSHIP</div></div>
+        <div class="role-card"><div class="role-code">MANAGER</div><div class="role-name">營運管理者</div><div class="role-group">LEADERSHIP</div></div>
+        <div class="role-card"><div class="role-code">OPERATOR</div><div class="role-name">一般營運</div><div class="role-group">BROAD_ADMIN</div></div>
+        <div class="role-card"><div class="role-code">FINANCE</div><div class="role-name">財務</div><div class="role-group">BROAD_ADMIN</div></div>
+        <div class="role-card"><div class="role-code">CS</div><div class="role-name">客服</div><div class="role-group">BROAD_ADMIN</div></div>
+        <div class="role-card"><div class="role-code">TECH</div><div class="role-name">技術</div><div class="role-group">BROAD_ADMIN</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 2: AGENT
+  ════════════════════════════════ -->
+  <div class="section" id="agent">
+    <div class="section-header">
+      <div class="section-icon color-agent">🤝</div>
+      <div>
+        <div class="section-title">代理管理模組</div>
+        <div class="section-meta">commits: 64cb917 · 80ad148</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="tags"><span class="tag tag-new">新增</span></div>
+        <div class="card-title">AgentDetail — 代理詳情頁</div>
+        <ul class="feature-list">
+          <li>代理基本資訊卡（帳號、等級、推薦人）</li>
+          <li>玩家總覽 KPI（直屬人數、當月活躍、累計存款）</li>
+          <li>直屬玩家列表（可排序、連結至玩家詳情）</li>
+          <li>操作歷史時間軸（凍結、升級等記錄）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="tags"><span class="tag tag-new">新增</span></div>
+        <div class="card-title">AgentCommission — 佣金設置</div>
+        <ul class="feature-list">
+          <li>流水比例 / 輸贏比例設定</li>
+          <li>各遊戲類型個別費率覆寫</li>
+          <li>等級門檻設定</li>
+          <li>儲存並提交審核</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">新增</span></div>
+      <div class="card-title">AgentReport — 代理統計報表</div>
+      <ul class="feature-list">
+        <li>多維度統計：代理數量、活躍玩家、存款總額、派彩總額、佣金支出</li>
+        <li>期間篩選（本月 / 上月 / 自訂日期）</li>
+        <li>代理層級下鑽</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 3: FINANCE
+  ════════════════════════════════ -->
+  <div class="section" id="finance">
+    <div class="section-header">
+      <div class="section-icon color-finance">💰</div>
+      <div>
+        <div class="section-title">財務管理補強</div>
+        <div class="section-meta">commits: cb4b16d · 78cc289</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">新增</span></div>
+      <div class="card-title">RefundManagement — 退款管理</div>
+      <ul class="feature-list">
+        <li>退款申請列表（狀態：待處理 / 已退款 / 已拒絕）</li>
+        <li>退款原因分類、玩家資訊、金額明細</li>
+        <li>批准 / 拒絕操作（拒絕需填寫原因）</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 4: CS
+  ════════════════════════════════ -->
+  <div class="section" id="cs">
+    <div class="section-header">
+      <div class="section-icon color-cs">🎧</div>
+      <div>
+        <div class="section-title">客服管理模組</div>
+        <div class="section-meta">commits: 8875d17 · 1b7b8a7</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="tags"><span class="tag tag-new">新增</span></div>
+        <div class="card-title">CSWorkbench — 客服工作台</div>
+        <ul class="feature-list">
+          <li>待處理工單列表、快速回覆</li>
+          <li>玩家資料側欄（資產摘要、最近操作）</li>
+          <li>對話紀錄時間軸</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="tags"><span class="tag tag-new">新增</span></div>
+        <div class="card-title">PlayerConversationSearch</div>
+        <ul class="feature-list">
+          <li>依玩家 ID / 用戶名搜尋對話記錄</li>
+          <li>時間軸式對話展示</li>
+          <li>CSV 匯出</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">新增</span></div>
+      <div class="card-title">WorldChannelMonitor — 世界頻道監控</div>
+      <ul class="feature-list">
+        <li>即時世界頻道訊息展示</li>
+        <li>敏感字高亮標示</li>
+        <li>一鍵禁言操作</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 5: FRONTEND MGMT
+  ════════════════════════════════ -->
+  <div class="section" id="frontend">
+    <div class="section-header">
+      <div class="section-icon color-frontend">🖥️</div>
+      <div>
+        <div class="section-title">前台管理模組</div>
+        <div class="section-meta">commits: 86753b4 · f170827</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">變更的檔案</div>
+      <table class="file-table">
+        <thead>
+          <tr><th>檔案路徑</th><th>狀態</th><th>說明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code class="file-path">src/types/frontend.ts</code></td><td class="status-new">新增</td><td>SlotType、ContentStatus、SlotContent 介面；SLOT_CONFIGS、STATUS_CONFIG lookup 表</td></tr>
+          <tr><td><code class="file-path">src/mocks/frontend.ts</code></td><td class="status-new">新增</td><td>20 筆版位內容 Mock（APP/WEB 各版位，含多種審核狀態）</td></tr>
+          <tr><td><code class="file-path">src/api/frontend.ts</code></td><td class="status-new">新增</td><td>getSlotContents、saveContent、submitForReview、reviewContent、updateSortOrder、deleteContent</td></tr>
+          <tr><td><code class="file-path">src/views/Master/FrontendManagement.vue</code></td><td class="status-change">重寫</td><td>完整版位管理介面（拖拉排序、Drawer 表單、草稿/送審流程）</td></tr>
+          <tr><td><code class="file-path">src/views/Master/FrontendReview.vue</code></td><td class="status-new">新增</td><td>前台內容審核中心（KPI 摘要、預覽 Modal、核准/拒絕）</td></tr>
+          <tr><td><code class="file-path">src/views/Master/ImageConfig.vue</code></td><td class="status-remove">移除</td><td>圖片管理功能由前台管理取代，從路由與導覽中一併移除</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">FrontendManagement 主要功能</div>
+        <ul class="feature-list">
+          <li>APP / WEB 平台分頁切換</li>
+          <li>各版位卡片區塊（Banner、公告、活動、熱門遊戲…）</li>
+          <li>HTML5 拖拉排序（Banner 類版位）</li>
+          <li>右側 Drawer：標題、圖片 URL、連結、排程時間</li>
+          <li>草稿存檔 / 送審 雙流程按鈕</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">FrontendReview 審核中心</div>
+        <ul class="feature-list">
+          <li>KPI 卡：待審核 / 今日核准 / 今日拒絕</li>
+          <li>篩選：平台、版位類型、關鍵字</li>
+          <li>預覽 Modal：縮圖 + 申請人資訊</li>
+          <li>核准 / 拒絕操作（拒絕需填原因）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">審核工作流程（所有模組共用）</div>
+      <div class="flow">
+        <div class="flow-step">DRAFT 草稿</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step warn">PENDING 待審核</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step active">ACTIVE 上線中</div>
+        <div class="flow-arrow"> / </div>
+        <div class="flow-step">SCHEDULED 排程中</div>
+        <div class="flow-arrow"> / </div>
+        <div class="flow-step error">REJECTED 已拒絕</div>
+        <div class="flow-arrow">→（到期）→</div>
+        <div class="flow-step">EXPIRED 已過期</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 6: PROMO
+  ════════════════════════════════ -->
+  <div class="section" id="promo">
+    <div class="section-header">
+      <div class="section-icon color-promo">🎁</div>
+      <div>
+        <div class="section-title">優惠管理模組</div>
+        <div class="section-meta">commits: 67d323d · bfc0a3d</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">優惠類型設計</div>
+      <div class="two-col">
+        <div>
+          <p style="font-size:.88rem;color:#64748b;margin-bottom:10px;"><strong>階梯型</strong>（首儲 / 儲值 / WEB 儲值）—— 多個儲值門檻，各自對應不同銀幣獎勵：</p>
+          <pre><code>// e.g. 端午節加碼！
+儲值  100 金幣 → 送  1,000 銀幣
+儲值  500 金幣 → 送  8,000 銀幣
+儲值 1000 金幣 → 送 20,000 銀幣</code></pre>
+        </div>
+        <div>
+          <p style="font-size:.88rem;color:#64748b;margin-bottom:10px;"><strong>單一獎勵型</strong>（手機綁定 / VIP 升等）—— 完成條件即發放固定銀幣：</p>
+          <pre><code>// e.g. 完成手機綁定
+→ 送 2,000 銀幣（一次性）</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">新增檔案清單</div>
+      <table class="file-table">
+        <thead><tr><th>檔案</th><th>狀態</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr><td><code class="file-path">src/types/promotion.ts</code></td><td class="status-new">新增</td><td>PromotionType、DepositTier、Promotion 介面；PROMOTION_TYPE_CONFIG（含 isTier 旗標）</td></tr>
+          <tr><td><code class="file-path">src/mocks/promotion.ts</code></td><td class="status-new">新增</td><td>13 筆優惠活動 Mock + 25 筆領取紀錄（涵蓋所有類型與狀態）</td></tr>
+          <tr><td><code class="file-path">src/api/promotion.ts</code></td><td class="status-new">新增</td><td>完整 CRUD + 審核流程 + 分頁領取紀錄查詢</td></tr>
+          <tr><td><code class="file-path">src/views/Master/PromotionManagement.vue</code></td><td class="status-new">新增</td><td>優惠活動管理主頁（Drawer 依類型切換階梯表格 / 單一輸入）</td></tr>
+          <tr><td><code class="file-path">src/views/Master/PromotionReview.vue</code></td><td class="status-new">新增</td><td>優惠活動審核中心（KPI + 階梯預覽 Modal）</td></tr>
+          <tr><td><code class="file-path">src/views/Master/PromotionRecords.vue</code></td><td class="status-new">新增</td><td>優惠領取紀錄查詢（分頁、篩選、KPI）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">PromotionManagement 功能</div>
+        <ul class="feature-list">
+          <li>統計 KPI（上線中、待審核、今日領取次數、今日總派銀）</li>
+          <li>篩選列（類型 / 狀態 / 關鍵字）</li>
+          <li>依類型切換 Drawer：階梯表格 or 單一輸入</li>
+          <li>「存草稿」+「送審」雙按鈕流程</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">PromotionRecords 查詢</div>
+        <ul class="feature-list">
+          <li>篩選：玩家 ID / 優惠類型 / 日期範圍</li>
+          <li>KPI：總領取次數、總發出銀幣、不重複玩家數</li>
+          <li>分頁表格，欄位含玩家 ID、用戶名、獎勵、領取時間</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 7: MISSION
+  ════════════════════════════════ -->
+  <div class="section" id="mission">
+    <div class="section-header">
+      <div class="section-icon color-mission">🏆</div>
+      <div>
+        <div class="section-title">任務管理模組</div>
+        <div class="section-meta">commits: 97356bd · afe2d04 · dd7f83c</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">任務類型</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;">
+        <div style="border:1px solid #bfdbfe;border-radius:8px;padding:14px;background:#eff6ff;">
+          <div style="font-weight:700;color:#1d4ed8;margin-bottom:6px;">📅 DAILY 每日任務</div>
+          <div style="font-size:.85rem;color:#3730a3;">登入 / 遊玩 / 儲值 / 邀請好友等每日重置任務，設定達成條件與銀幣/實體獎勵</div>
+        </div>
+        <div style="border:1px solid #fde68a;border-radius:8px;padding:14px;background:#fffbeb;">
+          <div style="font-weight:700;color:#b45309;margin-bottom:6px;">🎉 EVENT 活動任務</div>
+          <div style="font-size:.85rem;color:#92400e;">限期活動，設定開始/結束時間，含成本估算欄位（NTD）</div>
+        </div>
+        <div style="border:1px solid #6ee7b7;border-radius:8px;padding:14px;background:#f0fdf4;">
+          <div style="font-weight:700;color:#065f46;margin-bottom:6px;">📆 CHECKIN 每日簽到</div>
+          <div style="font-size:.85rem;color:#064e3b;">Singleton 設定，支援里程碑額外獎勵、30 格日曆預覽、成本摘要</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">MissionManagement — 雙分頁架構</div>
+      <div class="two-col">
+        <div>
+          <p style="font-weight:600;color:#065f46;margin-bottom:10px;">Tab 1：每日任務與簽到</p>
+          <ul class="feature-list">
+            <li>每日任務列表（DAILY）含成本/次欄位</li>
+            <li>每日簽到 inline 設定表單</li>
+            <li>里程碑列表（新增/刪除，多種獎勵）</li>
+            <li>30 格日曆預覽（里程碑日橘色高亮）</li>
+            <li>成本摘要：基礎 + 里程碑 + 每人週期總成本</li>
+          </ul>
+        </div>
+        <div>
+          <p style="font-weight:600;color:#92400e;margin-bottom:10px;">Tab 2：活動任務</p>
+          <ul class="feature-list">
+            <li>活動任務列表（EVENT）</li>
+            <li>狀態篩選（全部/上線中/排程中/草稿/待審核/已過期）</li>
+            <li>成本估算欄位（NTD）</li>
+            <li>活動期間顯示</li>
+            <li>新增/編輯 Drawer 含時間範圍選擇</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">每日簽到 — 30 格日曆預覽範例</div>
+      <p style="font-size:.85rem;color:#64748b;margin-bottom:12px;">橘色格為里程碑日（第 5、10、15、30 天），顯示額外獎勵摘要：</p>
+      <div class="cal-grid">
+        <!-- Row 1: 1-7 -->
+        <div class="cal-day"><div class="cal-day-num">1</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">2</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">3</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">4</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day milestone"><div class="cal-day-num">5</div><div class="cal-cost">NT$0.06</div><div class="cal-label">+500銀</div></div>
+        <div class="cal-day"><div class="cal-day-num">6</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">7</div><div class="cal-cost">NT$0.01</div></div>
+        <!-- Row 2: 8-14 -->
+        <div class="cal-day"><div class="cal-day-num">8</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">9</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day milestone"><div class="cal-day-num">10</div><div class="cal-cost">NT$0.11</div><div class="cal-label">+1000銀+頭像</div></div>
+        <div class="cal-day"><div class="cal-day-num">11</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">12</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">13</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">14</div><div class="cal-cost">NT$0.01</div></div>
+        <!-- Row 3: 15-21 -->
+        <div class="cal-day milestone"><div class="cal-day-num">15</div><div class="cal-cost">NT$0.21</div><div class="cal-label">+2000銀+頭像框</div></div>
+        <div class="cal-day"><div class="cal-day-num">16</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">17</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">18</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">19</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">20</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">21</div><div class="cal-cost">NT$0.01</div></div>
+        <!-- Row 4: 22-28 -->
+        <div class="cal-day"><div class="cal-day-num">22</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">23</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">24</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">25</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">26</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">27</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day"><div class="cal-day-num">28</div><div class="cal-cost">NT$0.01</div></div>
+        <!-- Row 5: 29-30 -->
+        <div class="cal-day"><div class="cal-day-num">29</div><div class="cal-cost">NT$0.01</div></div>
+        <div class="cal-day milestone"><div class="cal-day-num">30</div><div class="cal-cost">NT$1.01</div><div class="cal-label">+10000銀+框+禮物卡</div></div>
+        <div class="cal-day" style="background:#f8fafc;border-style:dashed;"></div>
+        <div class="cal-day" style="background:#f8fafc;border-style:dashed;"></div>
+        <div class="cal-day" style="background:#f8fafc;border-style:dashed;"></div>
+        <div class="cal-day" style="background:#f8fafc;border-style:dashed;"></div>
+        <div class="cal-day" style="background:#f8fafc;border-style:dashed;"></div>
+      </div>
+      <div style="margin-top:12px;padding:12px 16px;background:#fff7ed;border-radius:8px;border:1px solid #fed7aa;font-size:.85rem;color:#9a3412;">
+        <strong>成本計算公式：</strong> 10,000 銀幣 = 1 NTD　｜　每人週期總成本 ≈ NT$1.34（基礎 NT$0.30 + 里程碑 NT$1.04）
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">新增檔案清單</div>
+      <table class="file-table">
+        <thead><tr><th>檔案</th><th>狀態</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr><td><code class="file-path">src/types/mission.ts</code></td><td class="status-new">新增</td><td>MissionType、ConditionType、RewardType、Mission、CheckinMilestone、CheckinConfig 介面；各 CONFIG lookup 表</td></tr>
+          <tr><td><code class="file-path">src/mocks/mission.ts</code></td><td class="status-new">新增</td><td>8 筆任務 Mock（4 DAILY + 4 EVENT）+ mockCheckinConfig singleton + 11 筆領取紀錄</td></tr>
+          <tr><td><code class="file-path">src/api/mission.ts</code></td><td class="status-new">新增</td><td>任務 CRUD + 審核 + 4 個 CheckinConfig 專屬 API（get/save/submitForReview/review）</td></tr>
+          <tr><td><code class="file-path">src/views/Master/MissionManagement.vue</code></td><td class="status-change">重寫</td><td>雙分頁（每日任務與簽到 / 活動任務）、日曆預覽、成本估算、里程碑編輯</td></tr>
+          <tr><td><code class="file-path">src/views/Master/MissionReview.vue</code></td><td class="status-new">新增</td><td>任務審核中心（KPI + 類型篩選 + 審核 Modal）</td></tr>
+          <tr><td><code class="file-path">src/views/Master/MissionRecords.vue</code></td><td class="status-new">新增</td><td>任務領取紀錄（CHECKIN 顯示「簽到第 N 天」欄位）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 8: PENDING / SUGGESTIONS
+  ════════════════════════════════ -->
+  <div class="section" id="pending">
+    <div class="section-header">
+      <div class="section-icon color-tech">📋</div>
+      <div>
+        <div class="section-title">待辦項目與收斂建議</div>
+        <div class="section-meta">供需求方 / 開發夥伴參考</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">功能缺口（後續討論）</div>
+      <table class="pending-table">
+        <thead><tr><th>功能</th><th>狀態</th><th>說明 / 建議</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>禮物卡實體兌換流程</td>
+            <td class="status-todo">待規劃</td>
+            <td>目前以文字描述佔位（e.g.「全家禮物卡 100 元」），正式上線需串接實體卡系統或人工核銷流程</td>
+          </tr>
+          <tr>
+            <td>任務使用量上限設定</td>
+            <td class="status-todo">待規劃</td>
+            <td>目前優惠/任務無 max_claim 上限欄位；建議增加「活動總領取上限」與「每人領取次數上限」</td>
+          </tr>
+          <tr>
+            <td>任務 / 優惠複製功能</td>
+            <td class="status-todo">待規劃</td>
+            <td>新增時支援「從現有活動複製」可大幅提升營運效率（尤其節日活動重複性高）</td>
+          </tr>
+          <tr>
+            <td>前台管理圖片上傳</td>
+            <td class="status-todo">待規劃</td>
+            <td>目前 Drawer 僅提供圖片 URL 輸入，正式環境需串接 CDN / 物件儲存（如 S3 / GCS）</td>
+          </tr>
+          <tr>
+            <td>推播通知（任務完成）</td>
+            <td class="status-todo">待討論</td>
+            <td>任務達成後自動推播可串接現有 MessageSettings 模組，需確認推播規格</td>
+          </tr>
+          <tr>
+            <td>玩家端任務進度條</td>
+            <td class="status-later">後台設定完成</td>
+            <td>後台設定面已完整；玩家端進度條 UI 與 API 契約需另行規劃</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">型別修復紀錄（TypeScript 強型別驗證）</div>
+      <table class="file-table">
+        <thead><tr><th>檔案</th><th>問題描述</th><th>修復方式</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code class="file-path">PromotionManagement.vue</code></td>
+            <td><code>v-for</code> index 型別 <code>string | number</code> 無法直接傳入 <code>number</code> 函式參數</td>
+            <td>改為 <code>(idx as number)</code> 明確轉型</td>
+          </tr>
+          <tr>
+            <td><code class="file-path">MissionManagement.vue</code></td>
+            <td><code>NDatePicker</code> v-model 需 <code>number | null</code>（Unix timestamp），但表單欄位為 <code>string | undefined</code>（ISO）</td>
+            <td>新增 <code>startTs / endTs</code> ref，用 <code>watch</code> 雙向同步轉換</td>
+          </tr>
+          <tr>
+            <td><code class="file-path">AgentDetail.vue</code></td>
+            <td>缺少 <code>h()</code> import 導致 render 函式報錯</td>
+            <td>補上 <code>import { h } from 'vue'</code></td>
+          </tr>
+          <tr>
+            <td><code class="file-path">WorldChannelMonitor.vue</code></td>
+            <td><code>Partial&lt;T&gt;</code> 導致欄位型別退化為 <code>string | undefined</code></td>
+            <td>改以 explicit 欄位初始化，移除 <code>Partial&lt;&gt;</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="border-left:4px solid #0ea5e9;">
+      <div class="card-title" style="color:#0369a1;">📌 建議收斂方向</div>
+      <ul class="feature-list">
+        <li><strong>優先確認禮物卡核銷機制</strong>：目前為文字佔位，若要上線需先定義兌換流程（自動 or 人工）</li>
+        <li><strong>確認每日簽到週期重置規則</strong>：目前設定 30 天後行為（循環重置 or 按月）尚未定義</li>
+        <li><strong>統一活動「最大領取量」欄位</strong>：優惠與任務兩個模組建議使用相同資料結構</li>
+        <li><strong>前台管理版位定義最終化</strong>：APP/WEB 版位名稱與對應位置需與前端設計稿對齊</li>
+        <li><strong>角色 OPERATOR 與 MANAGER 的操作差異</strong>：目前兩者可見範圍相同，若有審核權限差異需更新 <code>sees()</code> 規則</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<footer>
+  <p>Game Operations 後台改版說明 &nbsp;·&nbsp; 2026-04-20 ~ 2026-04-23 &nbsp;·&nbsp; 由 Claude Sonnet 輔助生成</p>
+</footer>
+
+</body>
+</html>
