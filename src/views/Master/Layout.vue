@@ -152,7 +152,9 @@ const menuKeyToRoute: Record<string, string> = {
   'promotions': '/admin/promotions',
   'promotion-review': '/admin/promotion-review',
   'promotion-records': '/admin/promotion-records',
-  'missions': '/admin/missions'
+  'missions': '/admin/missions',
+  'mission-review': '/admin/mission-review',
+  'mission-records': '/admin/mission-records'
 }
 
 // 根據當前路由更新選中的菜單項
@@ -252,7 +254,9 @@ const menuOptions = computed(() => [
     key: 'mission-management-group',
     icon: renderIcon(PricetagsOutline),
     children: [
-      { label: t('navigation.missionManagement'), key: 'missions', icon: renderIcon(PricetagsOutline) }
+      { label: t('navigation.missionManagement'), key: 'missions',        icon: renderIcon(PricetagsOutline) },
+      { label: t('navigation.missionReview'),     key: 'mission-review',  icon: renderIcon(ReaderOutline)    },
+      { label: t('navigation.missionRecords'),    key: 'mission-records', icon: renderIcon(ListOutline)      }
     ]
   }] : []),
 

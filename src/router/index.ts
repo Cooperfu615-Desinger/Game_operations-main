@@ -363,6 +363,18 @@ const masterRoutes: RouteRecordRaw[] = [
         name: 'PromotionRecords',
         component: () => import('@/views/Master/PromotionRecords.vue'),
         meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '優惠領取紀錄' }
+      },
+      {
+        path: 'mission-review',
+        name: 'MissionReview',
+        component: () => import('@/views/Master/MissionReview.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '任務審核' }
+      },
+      {
+        path: 'mission-records',
+        name: 'MissionRecords',
+        component: () => import('@/views/Master/MissionRecords.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '任務領取紀錄' }
       }
     ]
   }
