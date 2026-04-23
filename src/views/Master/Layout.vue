@@ -150,6 +150,8 @@ const menuKeyToRoute: Record<string, string> = {
   'frontend-management': '/admin/frontend-management',
   'frontend-review': '/admin/frontend-review',
   'promotions': '/admin/promotions',
+  'promotion-review': '/admin/promotion-review',
+  'promotion-records': '/admin/promotion-records',
   'missions': '/admin/missions'
 }
 
@@ -237,8 +239,10 @@ const menuOptions = computed(() => [
     key: 'promotion-management-group',
     icon: renderIcon(GiftOutline),
     children: [
-      { label: t('navigation.promotionManagement'), key: 'promotions',   icon: renderIcon(GiftOutline) },
-      { label: t('navigation.vipSettings'),          key: 'vip-settings', icon: renderIcon(PricetagsOutline) }
+      { label: t('navigation.promotionManagement'), key: 'promotions',        icon: renderIcon(GiftOutline)      },
+      { label: t('navigation.promotionReview'),     key: 'promotion-review',  icon: renderIcon(ReaderOutline)    },
+      { label: t('navigation.promotionRecords'),    key: 'promotion-records', icon: renderIcon(ListOutline)      },
+      { label: t('navigation.vipSettings'),         key: 'vip-settings',      icon: renderIcon(PricetagsOutline) }
     ]
   }] : []),
 

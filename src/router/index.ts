@@ -351,6 +351,18 @@ const masterRoutes: RouteRecordRaw[] = [
         name: 'FrontendReview',
         component: () => import('@/views/Master/FrontendReview.vue'),
         meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '前台內容審核' }
+      },
+      {
+        path: 'promotion-review',
+        name: 'PromotionReview',
+        component: () => import('@/views/Master/PromotionReview.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '優惠活動審核' }
+      },
+      {
+        path: 'promotion-records',
+        name: 'PromotionRecords',
+        component: () => import('@/views/Master/PromotionRecords.vue'),
+        meta: { requiresAuth: true, roles: ['DEVELOPER', 'MANAGER'], breadcrumb: '優惠領取紀錄' }
       }
     ]
   }
