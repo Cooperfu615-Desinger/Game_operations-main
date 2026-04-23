@@ -43,8 +43,9 @@ const msgPool = [
 ]
 
 let idSeq = 1
-const makeMsg = (override?: Partial<typeof msgPool[0]>): WorldMessage => {
-  const src = override ?? msgPool[Math.floor(Math.random() * msgPool.length)]
+interface MsgSeed { pid: string; name: string; content: string }
+const makeMsg = (override?: MsgSeed): WorldMessage => {
+  const src: MsgSeed = override ?? msgPool[Math.floor(Math.random() * msgPool.length)]
   const now = new Date()
   return {
     id:           `wm_${String(idSeq++).padStart(4,'0')}`,
