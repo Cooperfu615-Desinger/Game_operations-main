@@ -1,6 +1,6 @@
 # 開發日誌 — Game Operations 後台改版紀錄
-> 期間：2026-04-20 ～ 2026-04-23  
-> Commits 涵蓋範圍：`5f94bff` → `dd7f83c`（共 20 筆）  
+> 期間：2026-04-20 ～ 2026-04-24  
+> Commits 涵蓋範圍：`5f94bff` → `3fc5130`（共 22 筆）  
 > 技術棧：Vue 3.3 · TypeScript · Vite 5 · Pinia · Vue Router 4 · Naive UI 2.36 · Tailwind CSS
 
 ---
@@ -15,9 +15,10 @@
 6. [前台管理模組](#6-前台管理模組)
 7. [優惠管理模組](#7-優惠管理模組)
 8. [任務管理模組](#8-任務管理模組)
-9. [設計規範與共用模式](#9-設計規範與共用模式)
-10. [已修復的型別錯誤](#10-已修復的型別錯誤)
-11. [尚未實作 / 待討論](#11-尚未實作--待討論)
+9. [程式碼品質重構 — 前端交付準備](#9-程式碼品質重構--前端交付準備)
+10. [設計規範與共用模式](#10-設計規範與共用模式)
+11. [已修復的型別與品質問題](#11-已修復的型別與品質問題)
+12. [尚未實作 / 待討論](#12-尚未實作--待討論)
 
 ---
 
@@ -27,9 +28,10 @@
 
 ```
 src/
-├── api/           # Mock API 層（含 delay 模擬、in-memory CRUD）
+├── api/           # Mock API 層（delay 模擬、in-memory CRUD；delay/resolveApprovalStatus 統一由 client.ts 提供）
 ├── mocks/         # 靜態 Mock 資料（陣列與 singleton 直接操作）
 ├── types/         # TypeScript 介面、type union、config lookup 表
+├── utils/         # 共用工具函式（formatters.ts）
 ├── views/
 │   ├── Master/    # 主要後台頁面
 │   ├── DataCenter/
@@ -268,9 +270,6 @@ interface DepositTier {
 - KPI：總領取次數、總發出銀幣、不重複玩家數
 - 分頁表格，顯示玩家 ID、用戶名、優惠名稱、獎勵銀幣、領取時間
 
-### 修復
-- `PromotionManagement.vue`：`v-for` index 型別 `string | number` 無法直接傳入 `removeTier(idx: number)`，改為 `(idx as number)` 解決
-
 ---
 
 ## 8. 任務管理模組
@@ -310,8 +309,8 @@ type RewardType = 'SILVER' | 'AVATAR' | 'AVATAR_FRAME' | 'GIFT_CARD'
 
 ```typescript
 interface CheckinConfig {
-  cycle_days: number           // 週期天數（預設 30）
-  daily_silver: number         // 每日基礎銀幣
+  cycle_days: number             // 週期天數（預設 30）
+  daily_silver: number           // 每日基礎銀幣
   milestones: CheckinMilestone[] // 特殊日額外獎勵
   status: MissionStatus
   submitted_by?: string
@@ -323,8 +322,8 @@ interface CheckinConfig {
 
 interface CheckinMilestone {
   id: string
-  day: number                  // 第幾天（e.g. 5, 10, 15, 30）
-  rewards: MissionReward[]     // 額外獎勵（銀幣 + 實體獎品）
+  day: number              // 第幾天（e.g. 5, 10, 15, 30）
+  rewards: MissionReward[] // 額外獎勵（銀幣 + 實體獎品）
 }
 ```
 
@@ -340,10 +339,7 @@ interface CheckinMilestone {
   - 里程碑日以橘色高亮顯示
   - 每格顯示「第 N 天」與該日成本（NTD）
   - 里程碑格額外顯示獎勵摘要
-- 成本摘要卡
-  - 基礎成本（每人每週期）
-  - 里程碑額外成本
-  - 每人週期總成本
+- 成本摘要卡：基礎成本 + 里程碑額外 + 每人週期總成本
 
 #### Tab 2：活動任務
 - 活動任務列表（EVENT type）
@@ -357,12 +353,6 @@ const calcRewardCost = (rewards: MissionReward[]) =>
   rewards.reduce((s, r) => s + (r.type === 'SILVER' ? (r.silver_amount ?? 0) : 0), 0) / SILVER_TO_NTD
 ```
 
-#### 新增/編輯 Drawer（DAILY / EVENT 共用）
-- 任務名稱、描述
-- 達成條件（類型 + 目標數量 + 說明）
-- 獎勵列表（多筆，支援銀幣 / 頭像 / 頭像框 / 禮物卡文字描述）
-- 活動時間範圍（EVENT only，使用 `NDatePicker`）
-
 ### MissionReview 功能
 - 待審核 / 已核准 / 已拒絕 KPI
 - 類型篩選（每日 / 活動 / 每日簽到）
@@ -373,13 +363,81 @@ const calcRewardCost = (rewards: MissionReward[]) =>
 - 特殊欄位：CHECKIN 類型顯示「簽到第 N 天」
 - KPI：總領取次數、總派銀、不重複玩家
 
-### 修復
-- `MissionManagement.vue`：`NDatePicker` v-model 需為 `number | null`（Unix timestamp），但表單欄位為 `string`（ISO）
-  - 解法：新增 `startTs / endTs` ref（`number | null`），`watch` 轉換為 ISO 字串寫回表單
+---
+
+## 9. 程式碼品質重構 — 前端交付準備
+
+**Commit:** `3fc5130`  
+**背景：** 透過三方向靜態分析（複用性 / 品質 / 架構），系統性修復接 real API 前的交付障礙。
+
+### 新增共用工具
+
+#### `src/utils/formatters.ts`（新增）
+集中三個在 5 個 view 中各自重複定義的格式化函式：
+
+```typescript
+export const fmtDate     = (iso?: string | null): string  // ISO → 'zh-TW' 日期
+export const fmtDateTime = (iso?: string | null): string  // ISO → 'MM/DD HH:mm'
+export const fmtNum      = (n: number): string            // 千分位格式
+```
+
+所有相關 view 改為 `import { fmtDate, fmtNum } from '@/utils/formatters'`。
+
+#### `src/api/client.ts` 新增兩個共用 export
+
+```typescript
+// 原先在 20+ api 檔各自定義，簽名不一（ms=400 / ms=300 / ms: number）
+export const delay = (ms = 400): Promise<void> => new Promise(r => setTimeout(r, ms))
+
+// 原先在 mission.ts 與 promotion.ts 各自複製一份相同邏輯
+export const resolveApprovalStatus = (
+  item: { is_limited: boolean; scheduled_start?: string }
+): 'SCHEDULED' | 'ACTIVE'
+```
+
+`api/mission.ts` 與 `api/promotion.ts` 改 import 這兩個 helper，不再各自重複。
+
+#### 修正 `client.ts` 的 `useMessage()` 問題
+`useMessage()` 必須在 Vue 元件 setup context 中呼叫，原先放在 `async request()` 裡會在接 real API 時直接噴錯。改為 Naive UI 的 `createDiscreteApi(['message'])`，在 module scope 初始化一次，適合在元件外部使用。
+
+### 新增環境設定檔
+
+| 檔案 | 說明 |
+|---|---|
+| `.env.development` | `VITE_USE_MOCK=true`（開發預設） |
+| `.env.example` | 範本，包含所有可設定的環境變數與說明 |
+
+前端接 real API 時只需建立 `.env.production` 並設定 `VITE_USE_MOCK=false` + `VITE_API_BASE_URL`。
+
+### MissionManagement.vue 改善
+
+| 問題 | 修復 |
+|---|---|
+| 8 個 async 函式無 `try/catch` → loading flag 接 real API 後永遠卡住 | 全部包 `try/catch/finally`，loading 改在 `finally` 重置 |
+| `sr.data!.id` 非空斷言 → 後端回傳異常時 crash | 改為 `sr.data?.id` + guard |
+| `created_by: 'operator'` 硬碼 | 改為 `authStore.user?.name ?? 'operator'` |
+| `submitCheckin` 不檢查 `saveCheckinConfig` 結果就繼續送審 | 補上 `if (saveRes.code !== 0) return` |
+| `fmtDate` / `fmtNum` 本地重複定義 | 改 import 自 `@/utils/formatters` |
+
+### PromotionManagement.vue 改善
+
+| 問題 | 修復 |
+|---|---|
+| `form` 型別為 `Partial<Promotion>`，導致 14 處 `(form as any)` 繞過型別系統 | 新增 `PromotionForm` 專屬 type，NDatePicker 欄位型別改為 `string \| null`（配合 `value-format`），移除所有 cast |
+| 6 個 async 函式無 `try/catch` | 全部包 `try/catch/finally` |
+| `saveRes.data!.id` 非空斷言 | 改為 `saveRes.data?.id` + guard |
+| `created_by: 'operator'` 硬碼 | 改為 `authStore.user?.name ?? 'operator'` |
+| `fmtDate` / `fmtNum` 本地重複定義 | 改 import 自 `@/utils/formatters` |
+
+### 移除死碼
+- `src/views/Master/ImageConfig.vue`（541 行）：已從 router / Layout.vue 移除，但原始檔仍存在 → 已刪除
+
+### API 層備註
+`api/mission.ts` 與 `api/promotion.ts` 中 `reviewed_by = 'manager'` 的硬碼已加上 `// NOTE: 真實後端應由 JWT 提供，上線前移除` 標記，提醒前端開發者串接時留意。
 
 ---
 
-## 9. 設計規範與共用模式
+## 10. 設計規範與共用模式
 
 ### 審核工作流程（所有模組共用）
 ```
@@ -393,11 +451,11 @@ DRAFT → PENDING → ACTIVE / SCHEDULED / REJECTED
 - 拒絕時：textarea 填寫原因，確認才送出
 
 ### Drawer 表單標準配置
-- 右側抽屜，寬度 480px
+- 右側抽屜，寬度 480–520px
 - 底部固定：「存草稿」+ 「送審」雙按鈕（或「儲存」單按鈕）
 
 ### API Mock 層規範
-- 所有 API 加 `delay(400ms)` 模擬網路延遲
+- `delay()` 統一從 `src/api/client.ts` import，預設 400ms
 - in-memory 資料直接操作 mock 陣列（`mockXxx[]`）
 - Singleton 資料以 exported `let` 物件管理（`mockCheckinConfig`）
 - ID 序列：字首縮寫 + 3-4 位數字（e.g. `ms001`, `prom001`, `sc001`）
@@ -408,7 +466,9 @@ DRAFT → PENDING → ACTIVE / SCHEDULED / REJECTED
 
 ---
 
-## 10. 已修復的型別錯誤
+## 11. 已修復的型別與品質問題
+
+### 功能開發期間修復
 
 | 檔案 | 問題 | 解法 |
 |---|---|---|
@@ -418,20 +478,44 @@ DRAFT → PENDING → ACTIVE / SCHEDULED / REJECTED
 | `AgentReport.vue` | `NSelect` v-model 型別應為 `string \| null` | 修正型別 |
 | `WorldChannelMonitor.vue` | `Partial<T>` 導致 `string \| undefined` 賦值錯誤 | explicit 欄位初始化 |
 
+### 程式碼重構期間修復（commit `3fc5130`）
+
+| 檔案 | 問題 | 解法 |
+|---|---|---|
+| `MissionManagement.vue` | 8 個 async 函式無 `try/catch`，loading flag 不歸零 | `try/catch/finally` 包覆全部 |
+| `PromotionManagement.vue` | 6 個 async 函式無 `try/catch`，loading flag 不歸零 | `try/catch/finally` 包覆全部 |
+| `PromotionManagement.vue` | 14 處 `(form as any)` 繞過型別系統 | 新增 `PromotionForm` 型別，全部移除 cast |
+| `MissionManagement.vue` | `sr.data!.id` 非空斷言 | `sr.data?.id` + guard |
+| `PromotionManagement.vue` | `saveRes.data!.id` 非空斷言 | `saveRes.data?.id` + guard |
+| `client.ts` | `useMessage()` 在 `async request()` 呼叫 → 非元件上下文會拋錯 | 改 `createDiscreteApi(['message'])` |
+| 全部 view | `'operator'` 硬碼身份 | 改讀 `authStore.user?.name` |
+
 ---
 
-## 11. 尚未實作 / 待討論
+## 12. 尚未實作 / 待討論
+
+### 功能面
 
 | 功能 | 狀態 | 備註 |
 |---|---|---|
-| 禮物卡實體兌換流程 | 文字描述佔位 | 正式環境需串接實體卡系統 |
-| 任務進度追蹤（玩家端） | 未實作 | 後台設定面完成；玩家端進度條待討論 |
+| 禮物卡實體兌換流程 | 文字描述佔位 | 正式環境需串接實體卡系統或人工核銷 |
+| 任務進度追蹤（玩家端） | 後台設定完成 | 玩家端進度條 UI 與 API 契約待規劃 |
 | 推播通知（任務完成） | 未實作 | 可串接現有 MessageSettings 模組 |
-| 優惠使用量上限設定 | 未實作 | 目前無 `max_claim` 欄位 |
-| 任務 / 優惠複製功能 | 未實作 | 新增時從現有活動快速複製 |
-| 前台管理圖片上傳 | 目前僅 URL 輸入 | 正式環境需串接 CDN / 物件儲存 |
-| 角色 `RISK` 的導覽項目 | 部分實作 | 風控管理群組可見，其他群組未做差異化 |
+| 優惠使用量上限 | 未實作 | 目前無 `max_claim` 欄位，需在優惠和任務兩模組同步加入 |
+| 任務 / 優惠複製功能 | 未實作 | 新增時從現有活動快速複製（節日重複性高） |
+| 前台管理圖片上傳 | 目前僅 URL 輸入 | 正式環境需串接 CDN / 物件儲存（S3 / GCS） |
+
+### 架構面（前端交付前建議處理）
+
+| 項目 | 優先 | 說明 |
+|---|---|---|
+| Mock / Real API 分層 | 高 | Mock 邏輯與 API 契約耦合於同一檔案；建議 `*.mock.ts` / `*.http.ts` 分離，以 `VITE_USE_MOCK` 切換 |
+| 分頁回應格式統一 | 高 | `{ items, total }` 與 `{ list, total }` 並存；`page_size` 與 `pageSize` 命名不一致 |
+| Auth JWT 完善 | 高 | `login()` 仍走 mock dict；JWT 過期無自動 refresh；nav guard 未驗證 token exp |
+| `WorkflowStatus` 集中定義 | 中 | 三個 type 檔各自定義相同 7-value union，應在 `types/index.ts` 集中一份 |
+| Review Modal 提取為 composable | 中 | 三個 Review 頁面（前台 / 優惠 / 任務）review modal state 結構完全相同 |
+| `types/index.ts` barrel export | 中 | 目前無 re-export；view 需使用 `@/types/mission`、`@/types/promotion` 等深路徑 |
 
 ---
 
-*最後更新：2026-04-23 | 由 Claude Sonnet 輔助生成*
+*最後更新：2026-04-24 | 由 Claude Sonnet 輔助生成*

@@ -194,6 +194,7 @@
     .color-promo   { background: #fef3c7; color: #78350f; }
     .color-mission { background: #ecfdf5; color: #064e3b; }
     .color-tech    { background: #f0f9ff; color: #0c4a6e; }
+    .color-refactor{ background: #fdf4ff; color: #6b21a8; }
 
     footer {
       background: #1a1a2e; color: #64748b; text-align: center;
@@ -209,9 +210,10 @@
     <h1>🎮 Game Operations 後台改版說明</h1>
     <p class="subtitle">本次改版新增模組、調整架構與修復紀錄</p>
     <div class="meta-row">
-      <span class="meta-chip">📅 2026-04-20 ~ 2026-04-23</span>
-      <span class="meta-chip">🔨 20 commits</span>
+      <span class="meta-chip">📅 2026-04-20 ~ 2026-04-24</span>
+      <span class="meta-chip">🔨 22 commits</span>
       <span class="meta-chip">📁 4,000+ 行新增程式碼</span>
+      <span class="meta-chip">🔧 +15 品質修復</span>
       <span class="meta-chip">⚙️ Vue 3 · TypeScript · Naive UI</span>
     </div>
   </div>
@@ -224,7 +226,8 @@
     <div class="kpi"><div class="kpi-num">7</div><div class="kpi-label">新增功能模組</div></div>
     <div class="kpi"><div class="kpi-num">12</div><div class="kpi-label">新增 Vue 頁面</div></div>
     <div class="kpi"><div class="kpi-num">6</div><div class="kpi-label">新增 TS 類型檔</div></div>
-    <div class="kpi"><div class="kpi-label" style="margin-top:14px">導覽群組完整角色分流</div></div>
+    <div class="kpi"><div class="kpi-num">15</div><div class="kpi-label">品質修復項目</div></div>
+    <div class="kpi"><div class="kpi-num">1</div><div class="kpi-label">新增共用工具模組</div></div>
   </div>
 
   <!-- ════ TOC ════ -->
@@ -238,6 +241,7 @@
       <a class="toc-item" href="#frontend"><span class="toc-icon">🖥️</span>前台管理</a>
       <a class="toc-item" href="#promo"><span class="toc-icon">🎁</span>優惠管理</a>
       <a class="toc-item" href="#mission"><span class="toc-icon">🏆</span>任務管理</a>
+      <a class="toc-item" href="#refactor"><span class="toc-icon">🔧</span>程式碼品質重構</a>
       <a class="toc-item" href="#pending"><span class="toc-icon">📋</span>待辦與收斂建議</a>
     </div>
   </div>
@@ -674,7 +678,164 @@ sees(...LEADERSHIP, 'OPERATOR')</code></pre>
   </div>
 
   <!-- ════════════════════════════════
-       SECTION 8: PENDING / SUGGESTIONS
+       SECTION 8: REFACTOR
+  ════════════════════════════════ -->
+  <div class="section" id="refactor">
+    <div class="section-header">
+      <div class="section-icon color-refactor">🔧</div>
+      <div>
+        <div class="section-title">程式碼品質重構 — 前端交付準備</div>
+        <div class="section-meta">commit: 3fc5130 · 2026-04-24</div>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:4px solid #a855f7;">
+      <div class="card-title" style="color:#6b21a8;">背景說明</div>
+      <p style="font-size:.9rem;color:#334155;">透過三方向靜態分析（複用性 / 品質 / 架構），系統性修復接 Real API 前的交付障礙。共修復 15 個問題點，新增 2 個共用模組、2 個環境設定檔，刪除 1 個死碼檔案。</p>
+    </div>
+
+    <!-- New shared utilities -->
+    <div class="card">
+      <div class="card-title">新增共用工具 — 消除重複程式碼</div>
+      <div class="two-col">
+        <div>
+          <div class="tags"><span class="tag tag-new">新增</span><span class="tag tag-module">src/utils/formatters.ts</span></div>
+          <p style="font-size:.87rem;color:#475569;margin-bottom:10px;">集中原本分散在 5 個 view 中各自重複定義的格式化函式：</p>
+          <pre><code>// 統一出口，所有 view 改 import 此檔
+export const fmtDate     = (iso?: string | null) => string
+export const fmtDateTime = (iso?: string | null) => string  // MM/DD HH:mm
+export const fmtNum      = (n: number)           => string  // 千分位</code></pre>
+        </div>
+        <div>
+          <div class="tags"><span class="tag tag-change">修改</span><span class="tag tag-module">src/api/client.ts</span></div>
+          <p style="font-size:.87rem;color:#475569;margin-bottom:10px;">新增兩個共用 export，消除各 API 檔的重複：</p>
+          <pre><code>// delay — 原先 20+ 個 api 檔各自定義，簽名不一
+export const delay = (ms = 400): Promise&lt;void&gt;
+
+// resolveApprovalStatus — 原先 mission.ts 與 promotion.ts 各自複製
+export const resolveApprovalStatus = (
+  item: { is_limited: boolean; scheduled_start?: string }
+): 'SCHEDULED' | 'ACTIVE'</code></pre>
+          <p style="font-size:.84rem;color:#7c3aed;margin-top:8px;">⚠️ 並同步修正 <code>useMessage()</code> 在非元件上下文呼叫會拋錯的問題 → 改為 <code>createDiscreteApi(['message'])</code></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Env files -->
+    <div class="card">
+      <div class="card-title">新增環境設定檔</div>
+      <table class="file-table">
+        <thead><tr><th>檔案</th><th>狀態</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code class="file-path">.env.development</code></td>
+            <td class="status-new">新增</td>
+            <td><code>VITE_USE_MOCK=true</code>（開發預設啟用 mock），<code>VITE_API_BASE_URL=http://localhost:3000/api</code></td>
+          </tr>
+          <tr>
+            <td><code class="file-path">.env.example</code></td>
+            <td class="status-new">新增</td>
+            <td>環境變數範本文件，含說明；前端接 Real API 時複製此檔建立 <code>.env.production</code>，設定 <code>VITE_USE_MOCK=false</code></td>
+          </tr>
+          <tr>
+            <td><code class="file-path">src/views/Master/ImageConfig.vue</code></td>
+            <td class="status-remove">刪除</td>
+            <td>541 行死碼，已從 router / Layout.vue 移除但原始檔殘留 → 確認無任何 import 後刪除</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MissionManagement fixes -->
+    <div class="card">
+      <div class="card-title">MissionManagement.vue — 5 項修復</div>
+      <table class="file-table">
+        <thead><tr><th>問題</th><th>修復方式</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>8 個 async 函式無 <code>try/catch</code> → loading flag 接 Real API 後永遠卡住</td>
+            <td>全部包 <code>try/catch/finally</code>，loading 改在 <code>finally</code> 重置</td>
+          </tr>
+          <tr>
+            <td><code>sr.data!.id</code> 非空斷言 → 後端回傳異常時 crash</td>
+            <td>改為 <code>sr.data?.id</code> + guard（無 id 時提示錯誤並 return）</td>
+          </tr>
+          <tr>
+            <td><code>created_by: 'operator'</code> 硬碼身份</td>
+            <td>改為 <code>authStore.user?.name ?? 'operator'</code>，讀取登入者真實名稱</td>
+          </tr>
+          <tr>
+            <td><code>submitCheckin</code> 不檢查 <code>saveCheckinConfig</code> 結果就繼續送審</td>
+            <td>補上 <code>if (saveRes.code !== 0) return</code> 中斷錯誤流程</td>
+          </tr>
+          <tr>
+            <td><code>fmtDate</code> / <code>fmtNum</code> 本地重複定義</td>
+            <td>刪除本地定義，改 import 自 <code>@/utils/formatters</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PromotionManagement fixes -->
+    <div class="card">
+      <div class="card-title">PromotionManagement.vue — 5 項修復</div>
+      <table class="file-table">
+        <thead><tr><th>問題</th><th>修復方式</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>form</code> 型別為 <code>Partial&lt;Promotion&gt;</code> → 14 處 <code>(form as any)</code> 繞過型別系統</td>
+            <td>新增 <code>PromotionForm</code> 專屬 type；NDatePicker 欄位型別改為 <code>string | null</code>（配合 <code>value-format</code>）；全部移除 cast</td>
+          </tr>
+          <tr>
+            <td>6 個 async 函式無 <code>try/catch</code> → loading flag 接 Real API 後永遠卡住</td>
+            <td>全部包 <code>try/catch/finally</code></td>
+          </tr>
+          <tr>
+            <td><code>saveRes.data!.id</code> 非空斷言</td>
+            <td>改為 <code>saveRes.data?.id</code> + guard</td>
+          </tr>
+          <tr>
+            <td><code>created_by: 'operator'</code> 硬碼身份</td>
+            <td>改為 <code>authStore.user?.name ?? 'operator'</code></td>
+          </tr>
+          <tr>
+            <td><code>fmtDate</code> / <code>fmtNum</code> 本地重複定義</td>
+            <td>刪除本地定義，改 import 自 <code>@/utils/formatters</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pattern highlight -->
+    <div class="card">
+      <div class="card-title">關鍵模式：async 函式標準寫法</div>
+      <p style="font-size:.85rem;color:#64748b;margin-bottom:12px;">所有涉及 loading state 的 async 操作，須統一採用此結構，確保 Real API 下 flag 一定歸零：</p>
+      <pre><code>const saveDraft = async () => {
+  if (!dform.name.trim()) { message.warning('請填寫名稱'); return }
+  saving.value = true
+  try {
+    const res = await api.save({ ...dform, created_by: authStore.user?.name ?? 'operator' })
+    if (res.code === 0) { message.success('已儲存'); showDrawer.value = false; loadAll() }
+  } catch {
+    message.error('儲存失敗')
+  } finally {
+    saving.value = false   // ← 不論成功 / 失敗 / 例外，一定執行
+  }
+}</code></pre>
+    </div>
+
+    <!-- Build result -->
+    <div class="card" style="border-left:4px solid #22c55e;">
+      <div class="card-title" style="color:#16a34a;">✅ 重構後建置驗證</div>
+      <pre><code style="color:#86efac;">✓ 15,513 modules transformed
+✓ built in 14.50s
+0 TypeScript errors · 0 warnings</code></pre>
+      <p style="font-size:.85rem;color:#475569;margin-top:8px;">較重構前增加 1 個模組（新增的 <code>utils/formatters.ts</code>）；無 breaking change。</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SECTION 9: PENDING / SUGGESTIONS
   ════════════════════════════════ -->
   <div class="section" id="pending">
     <div class="section-header">
@@ -685,79 +846,91 @@ sees(...LEADERSHIP, 'OPERATOR')</code></pre>
       </div>
     </div>
 
+    <!-- 功能面 -->
     <div class="card">
-      <div class="card-title">功能缺口（後續討論）</div>
+      <div class="card-title">功能面 — 待規劃 / 待討論</div>
       <table class="pending-table">
         <thead><tr><th>功能</th><th>狀態</th><th>說明 / 建議</th></tr></thead>
         <tbody>
           <tr>
             <td>禮物卡實體兌換流程</td>
-            <td class="status-todo">待規劃</td>
-            <td>目前以文字描述佔位（e.g.「全家禮物卡 100 元」），正式上線需串接實體卡系統或人工核銷流程</td>
+            <td class="status-todo">文字佔位</td>
+            <td>正式上線需串接實體卡系統或人工核銷流程（e.g.「全家禮物卡 100 元」）</td>
           </tr>
           <tr>
-            <td>任務使用量上限設定</td>
-            <td class="status-todo">待規劃</td>
-            <td>目前優惠/任務無 max_claim 上限欄位；建議增加「活動總領取上限」與「每人領取次數上限」</td>
-          </tr>
-          <tr>
-            <td>任務 / 優惠複製功能</td>
-            <td class="status-todo">待規劃</td>
-            <td>新增時支援「從現有活動複製」可大幅提升營運效率（尤其節日活動重複性高）</td>
-          </tr>
-          <tr>
-            <td>前台管理圖片上傳</td>
-            <td class="status-todo">待規劃</td>
-            <td>目前 Drawer 僅提供圖片 URL 輸入，正式環境需串接 CDN / 物件儲存（如 S3 / GCS）</td>
+            <td>任務進度追蹤（玩家端）</td>
+            <td class="status-later">後台完成</td>
+            <td>後台設定面已完整；玩家端進度條 UI 與 API 契約需另行規劃</td>
           </tr>
           <tr>
             <td>推播通知（任務完成）</td>
-            <td class="status-todo">待討論</td>
-            <td>任務達成後自動推播可串接現有 MessageSettings 模組，需確認推播規格</td>
+            <td class="status-todo">未實作</td>
+            <td>可串接現有 MessageSettings 模組，需確認推播規格</td>
           </tr>
           <tr>
-            <td>玩家端任務進度條</td>
-            <td class="status-later">後台設定完成</td>
-            <td>後台設定面已完整；玩家端進度條 UI 與 API 契約需另行規劃</td>
+            <td>優惠 / 任務使用量上限</td>
+            <td class="status-todo">未實作</td>
+            <td>目前無 <code>max_claim</code> 欄位，需在優惠與任務兩模組同步加入</td>
+          </tr>
+          <tr>
+            <td>任務 / 優惠複製功能</td>
+            <td class="status-todo">未實作</td>
+            <td>新增時支援「從現有活動複製」，節日活動重複性高、可大幅提升營運效率</td>
+          </tr>
+          <tr>
+            <td>前台管理圖片上傳</td>
+            <td class="status-todo">目前 URL 輸入</td>
+            <td>正式環境需串接 CDN / 物件儲存（S3 / GCS）</td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- 架構面 -->
     <div class="card">
-      <div class="card-title">型別修復紀錄（TypeScript 強型別驗證）</div>
-      <table class="file-table">
-        <thead><tr><th>檔案</th><th>問題描述</th><th>修復方式</th></tr></thead>
+      <div class="card-title">架構面 — 前端交付前建議處理</div>
+      <table class="pending-table">
+        <thead><tr><th>項目</th><th>優先</th><th>說明</th></tr></thead>
         <tbody>
           <tr>
-            <td><code class="file-path">PromotionManagement.vue</code></td>
-            <td><code>v-for</code> index 型別 <code>string | number</code> 無法直接傳入 <code>number</code> 函式參數</td>
-            <td>改為 <code>(idx as number)</code> 明確轉型</td>
+            <td>Mock / Real API 分層</td>
+            <td><span style="color:#dc2626;font-weight:700;">高</span></td>
+            <td>Mock 邏輯與 API 契約耦合於同一檔案；建議 <code>*.mock.ts</code> / <code>*.http.ts</code> 分離，以 <code>VITE_USE_MOCK</code> 切換</td>
           </tr>
           <tr>
-            <td><code class="file-path">MissionManagement.vue</code></td>
-            <td><code>NDatePicker</code> v-model 需 <code>number | null</code>（Unix timestamp），但表單欄位為 <code>string | undefined</code>（ISO）</td>
-            <td>新增 <code>startTs / endTs</code> ref，用 <code>watch</code> 雙向同步轉換</td>
+            <td>分頁回應格式統一</td>
+            <td><span style="color:#dc2626;font-weight:700;">高</span></td>
+            <td><code>{ items, total }</code> 與 <code>{ list, total }</code> 並存；<code>page_size</code> 與 <code>pageSize</code> 命名不一致，需對齊後端契約</td>
           </tr>
           <tr>
-            <td><code class="file-path">AgentDetail.vue</code></td>
-            <td>缺少 <code>h()</code> import 導致 render 函式報錯</td>
-            <td>補上 <code>import { h } from 'vue'</code></td>
+            <td>Auth JWT 完善</td>
+            <td><span style="color:#dc2626;font-weight:700;">高</span></td>
+            <td><code>login()</code> 仍走 mock dict；JWT 過期無自動 refresh；nav guard 未驗證 token exp</td>
           </tr>
           <tr>
-            <td><code class="file-path">WorldChannelMonitor.vue</code></td>
-            <td><code>Partial&lt;T&gt;</code> 導致欄位型別退化為 <code>string | undefined</code></td>
-            <td>改以 explicit 欄位初始化，移除 <code>Partial&lt;&gt;</code></td>
+            <td><code>WorkflowStatus</code> 集中定義</td>
+            <td><span style="color:#d97706;font-weight:700;">中</span></td>
+            <td>三個 type 檔各自定義相同 7-value union，應在 <code>types/index.ts</code> 集中一份</td>
+          </tr>
+          <tr>
+            <td>Review Modal 提取為 composable</td>
+            <td><span style="color:#d97706;font-weight:700;">中</span></td>
+            <td>三個 Review 頁面（前台 / 優惠 / 任務）review modal state 結構完全相同，可抽成 <code>useReviewModal()</code></td>
+          </tr>
+          <tr>
+            <td><code>types/index.ts</code> barrel export</td>
+            <td><span style="color:#d97706;font-weight:700;">中</span></td>
+            <td>目前無 re-export；view 需使用 <code>@/types/mission</code>、<code>@/types/promotion</code> 等深路徑，加上 barrel 可統一為 <code>@/types</code></td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="card" style="border-left:4px solid #0ea5e9;">
-      <div class="card-title" style="color:#0369a1;">📌 建議收斂方向</div>
+      <div class="card-title" style="color:#0369a1;">📌 建議收斂方向（需求方確認）</div>
       <ul class="feature-list">
         <li><strong>優先確認禮物卡核銷機制</strong>：目前為文字佔位，若要上線需先定義兌換流程（自動 or 人工）</li>
-        <li><strong>確認每日簽到週期重置規則</strong>：目前設定 30 天後行為（循環重置 or 按月）尚未定義</li>
+        <li><strong>確認每日簽到週期重置規則</strong>：30 天到期後的行為（循環重置 or 按月）尚未定義</li>
         <li><strong>統一活動「最大領取量」欄位</strong>：優惠與任務兩個模組建議使用相同資料結構</li>
         <li><strong>前台管理版位定義最終化</strong>：APP/WEB 版位名稱與對應位置需與前端設計稿對齊</li>
         <li><strong>角色 OPERATOR 與 MANAGER 的操作差異</strong>：目前兩者可見範圍相同，若有審核權限差異需更新 <code>sees()</code> 規則</li>
@@ -768,7 +941,7 @@ sees(...LEADERSHIP, 'OPERATOR')</code></pre>
 </div><!-- /content -->
 
 <footer>
-  <p>Game Operations 後台改版說明 &nbsp;·&nbsp; 2026-04-20 ~ 2026-04-23 &nbsp;·&nbsp; 由 Claude Sonnet 輔助生成</p>
+  <p>Game Operations 後台改版說明 &nbsp;·&nbsp; 2026-04-20 ~ 2026-04-24 &nbsp;·&nbsp; 由 Claude Sonnet 輔助生成</p>
 </footer>
 
 </body>
